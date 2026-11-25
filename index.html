@@ -829,6 +829,14 @@
         function esc(v) {
             return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
         }
+        // Desconto: só existe quando o preço riscado cadastrado é maior que o preço atual
+        function discountPercent(p) {
+            const oldP = Number(p.originalPrice), cur = Number(p.price);
+            return (oldP > cur && cur > 0) ? Math.round((1 - cur / oldP) * 100) : 0;
+        }
+        function oldPriceHTML(p, cls) {
+            return discountPercent(p) > 0 ? `<span class="${cls} line-through text-gray-400 font-medium">R$ ${Number(p.originalPrice).toFixed(2).replace('.', ',')}</span>` : '';
+        }
         function safeCode(v) { return String(v ?? '').replace(/[^A-Za-z0-9]/g, '').slice(0, 30); }
 
         // ==========================================
@@ -1157,6 +1165,7 @@
                         <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                         ${p.badge ? `<span class="absolute top-1.5 left-1.5 bg-cdcHeader text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">${p.badge}</span>` : ''}
                         ${p.freeShipping ? `<span class="absolute top-1.5 right-1.5 bg-emerald-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow uppercase">Frete Grátis</span>` : ''}
+                        ${discountPercent(p) > 0 ? `<span class="absolute bottom-1.5 left-1.5 bg-orange-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded shadow">-${discountPercent(p)}% OFF</span>` : ''}
                     </div>
 
                     <div class="p-2.5 sm:p-3.5 flex-grow flex flex-col justify-between space-y-1.5">
@@ -1174,6 +1183,7 @@
                         <div>
                             <div class="flex items-baseline gap-1 mt-1">
                                 <span class="text-sm sm:text-base font-black text-navy-900">R$ ${p.price.toFixed(2).replace('.', ',')}</span>
+                                ${oldPriceHTML(p, 'text-[10px]')}
                             </div>
                             <p class="text-[9px] text-emerald-600 font-medium flex items-center">
                                 Estoque (${p.stock} un.)
@@ -1289,7 +1299,7 @@
                         <img src="${p.image}" class="w-full h-full object-cover">
                     </div>
                     <h5 class="font-bold text-[11px] text-navy-900 line-clamp-1 mt-1">${p.name}</h5>
-                    <span class="text-xs font-black text-navy-900">R$ ${p.price.toFixed(2).replace('.', ',')}</span>
+                    <div class="flex items-baseline gap-1"><span class="text-xs font-black text-navy-900">R$ ${p.price.toFixed(2).replace('.', ',')}</span>${oldPriceHTML(p, 'text-[9px]')}</div>
                     <button onclick="navigateToProduct(${p.id})" class="mt-1 bg-cdcHeader text-white text-[10px] font-bold py-1 rounded-lg">Ver</button>
                 </div>
             `).join('');
