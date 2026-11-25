@@ -1329,7 +1329,7 @@
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${supabaseKey}`,
+                        "apikey": supabaseKey,
                     },
                     body: JSON.stringify({ trackingCode }),
                 });
@@ -1410,27 +1410,17 @@
             resultContainer.innerHTML = `<p class="text-xs text-gray-500 text-center py-4"><i class="fas fa-spinner fa-spin"></i> Buscando seus pedidos...</p>`;
 
             try {
-                // Busca o cliente pelo CPF na tabela 'customers'
-                const { data: customerData, error: custError } = await supabaseClient
-                    .from('customers')
-                    .select('id')
-                    .eq('cpf_cnpj', cpfCnpj)
-                    .maybeSingle();
+                const lookupRes = await fetch(`${supabaseUrl}/functions/v1/lookup-orders`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'apikey': supabaseKey },
+                    body: JSON.stringify({ name, cpfCnpj })
+                });
+                const lookupData = await lookupRes.json();
+                if (!lookupData.success) throw new Error(lookupData.error || 'Erro na consulta');
+                const ordersData = lookupData.orders || [];
 
-                if (custError || !customerData) {
-                    resultContainer.innerHTML = `<div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-center text-xs text-amber-800">Nenhum pedido encontrado para este CPF/CNPJ. Verifique se digitou corretamente.</div>`;
-                    return;
-                }
-
-                // Busca os pedidos do cliente na tabela 'orders'
-                const { data: ordersData, error: ordError } = await supabaseClient
-                    .from('orders')
-                    .select('*')
-                    .eq('customer_id', customerData.id)
-                    .order('created_at', { ascending: false });
-
-                if (ordError || !ordersData || ordersData.length === 0) {
-                    resultContainer.innerHTML = `<div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-center text-xs text-amber-800">Nenhum pedido registrado para este cadastro.</div>`;
+                if (ordersData.length === 0) {
+                    resultContainer.innerHTML = `<div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-center text-xs text-amber-800">Nenhum pedido encontrado. Verifique se digitou corretamente o nome e o CPF/CNPJ usados na compra.</div>`;
                     return;
                 }
 
@@ -1809,25 +1799,20 @@
             showNotification("Comunicando com o Asaas...");
 
             try {
-                let itemsParaAsaas = [...cart];
-                if (finalFreight > 0) {
-                    itemsParaAsaas.push({
-                        name: "Frete de Entrega",
-                        price: finalFreight,
-                        quantity: 1
-                    });
-                }
+                const itemsParaAsaas = cart.map(i => ({ id: i.id, quantity: i.quantity }));
 
                 const response = await fetch(`${supabaseUrl}/functions/v1/create-asaas-charge`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${supabaseKey}`
+                        'apikey': supabaseKey
                     },
                     body: JSON.stringify({
                         customer: { name, cpfCnpj, email, phone },
-                        items: itemsParaAsaas, 
-                        paymentMethod: paymentMethod
+                        items: itemsParaAsaas,
+                        paymentMethod: paymentMethod,
+                        cep: cep,
+                        address: enderecoCompleto
                     })
                 });
 
