@@ -270,6 +270,29 @@
                                     </div>
                                 </div>
 
+                                <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl space-y-2">
+                                    <div class="text-[11px] font-bold text-blue-900"><i class="fas fa-box mr-1"></i> Dados da embalagem para o frete (Correios)</div>
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                        <div>
+                                            <label class="block text-[10px] font-semibold text-gray-700 mb-1">Peso (kg)</label>
+                                            <input type="text" inputmode="decimal" id="newProdWeight" required placeholder="0,350" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-semibold text-gray-700 mb-1">Comprimento (cm)</label>
+                                            <input type="text" inputmode="decimal" id="newProdLength" required placeholder="20" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-semibold text-gray-700 mb-1">Largura (cm)</label>
+                                            <input type="text" inputmode="decimal" id="newProdWidth" required placeholder="15" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-semibold text-gray-700 mb-1">Altura (cm)</label>
+                                            <input type="text" inputmode="decimal" id="newProdHeight" required placeholder="10" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none">
+                                        </div>
+                                    </div>
+                                    <p class="text-[9px] text-blue-800/80">Meça a caixa já embalada, pronta para postar. Limites dos Correios: até 30 kg; comprimento 15–100 cm, largura 10–100 cm, altura 1–100 cm; soma das três medidas até 200 cm.</p>
+                                </div>
+
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="block text-[11px] font-semibold text-gray-700 mb-1">Selo (Ex: Promoção)</label>
@@ -398,6 +421,29 @@
                             </select>
                         </div>
                     </div>
+                        <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl space-y-2">
+                            <div class="text-[11px] font-bold text-blue-900"><i class="fas fa-box mr-1"></i> Dados da embalagem para o frete (Correios)</div>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-gray-700 mb-1">Peso (kg)</label>
+                                    <input type="text" inputmode="decimal" id="editProdWeight" required placeholder="0,350" class="w-full px-3 py-2 text-xs border rounded-lg bg-gray-50 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-gray-700 mb-1">Comprimento (cm)</label>
+                                    <input type="text" inputmode="decimal" id="editProdLength" required placeholder="20" class="w-full px-3 py-2 text-xs border rounded-lg bg-gray-50 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-gray-700 mb-1">Largura (cm)</label>
+                                    <input type="text" inputmode="decimal" id="editProdWidth" required placeholder="15" class="w-full px-3 py-2 text-xs border rounded-lg bg-gray-50 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-gray-700 mb-1">Altura (cm)</label>
+                                    <input type="text" inputmode="decimal" id="editProdHeight" required placeholder="10" class="w-full px-3 py-2 text-xs border rounded-lg bg-gray-50 outline-none">
+                                </div>
+                            </div>
+                            <p class="text-[9px] text-blue-800/80">Meça a caixa já embalada, pronta para postar. Limites dos Correios: até 30 kg; comprimento 15–100 cm, largura 10–100 cm, altura 1–100 cm; soma das três medidas até 200 cm.</p>
+                        </div>
+
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[11px] font-semibold text-gray-700 mb-1">Selo</label>
@@ -707,6 +753,7 @@
                             <h5 class="font-bold truncate text-[11px] text-navy-900">${esc(p.name)}</h5>
                             <span class="text-[10px] text-emerald-600 font-bold">R$ ${p.price.toFixed(2)}</span>
                             <span class="text-[9px] text-gray-400 ml-2">Estoque: ${p.stock}</span>
+                            <span class="text-[9px] ${p.weight_kg ? 'text-gray-400' : 'text-red-500 font-bold'} block">${p.weight_kg ? `${Number(p.weight_kg)} kg · ${Number(p.length_cm)}×${Number(p.width_cm)}×${Number(p.height_cm)} cm` : 'Sem peso/medidas'}</span>
                         </div>
                         <div class="flex items-center gap-2 pr-2" onclick="event.stopPropagation()">
                             <button onclick="openEditProductModal(${p.id})" class="text-amber-600 hover:bg-amber-50 p-1.5 rounded"><i class="fas fa-edit"></i></button>
@@ -716,6 +763,22 @@
                 `).join('');
             }
             attachDragAndDropEvents();
+        }
+
+        // Peso e medidas da embalagem (usados no cálculo do frete dos Correios)
+        function readShippingFields(prefix) {
+            const num = id => parseFloat(String(document.getElementById(prefix + id).value).replace(',', '.'));
+            const weight = num('ProdWeight'), length = num('ProdLength'), width = num('ProdWidth'), height = num('ProdHeight');
+            if ([weight, length, width, height].some(v => !isFinite(v) || v <= 0)) {
+                alert("Preencha peso e medidas da embalagem (somente números maiores que zero).");
+                return null;
+            }
+            if (weight > 30) { alert("O peso máximo aceito pelos Correios é 30 kg."); return null; }
+            if (length < 15 || length > 100) { alert("Comprimento deve ficar entre 15 e 100 cm (regra dos Correios)."); return null; }
+            if (width < 10 || width > 100) { alert("Largura deve ficar entre 10 e 100 cm (regra dos Correios)."); return null; }
+            if (height < 1 || height > 100) { alert("Altura deve ficar entre 1 e 100 cm (regra dos Correios)."); return null; }
+            if (length + width + height > 200) { alert("A soma de comprimento + largura + altura não pode passar de 200 cm."); return null; }
+            return { weight_kg: weight, length_cm: length, width_cm: width, height_cm: height };
         }
 
         // 4. CRUD PRODUTOS E BANNERS
@@ -729,6 +792,9 @@
             const price = parseFloat(priceVal);
             const origPrice = origPriceVal ? parseFloat(origPriceVal) : price;
 
+            const shipping = readShippingFields('new');
+            if (!shipping) return;
+
             const newProduct = {
                 name: document.getElementById('newProdName').value.trim(),
                 category: category,
@@ -740,6 +806,7 @@
                 badge: document.getElementById('newProdBadge').value.trim(),
                 description: document.getElementById('newProdDescription').value.trim(),
                 condition: category === 'livros' ? document.getElementById('newProdCondition').value : 'novo',
+                ...shipping,
                 rating: 0,
                 reviews: 0
             };
@@ -749,7 +816,7 @@
                 showNotification(`Produto cadastrado no site!`);
                 e.target.reset();
                 carregarDadosDoSupabase();
-            } else alert("Erro ao salvar.");
+            } else { console.error(error); alert("Erro ao salvar. Confira os campos de peso e medidas."); }
         }
 
         async function handleSaveEditedProduct(e) {
@@ -762,7 +829,10 @@
 
             const price = parseFloat(priceVal);
             const origPrice = origPriceVal ? parseFloat(origPriceVal) : price;
-            
+
+            const shipping = readShippingFields('edit');
+            if (!shipping) return;
+
             const updatedProduct = {
                 name: document.getElementById('editProdName').value.trim(),
                 category: category,
@@ -773,7 +843,8 @@
                 freeShipping: document.getElementById('editProdFreeShipping').value === 'true',
                 badge: document.getElementById('editProdBadge').value.trim(),
                 description: document.getElementById('editProdDescription').value.trim(),
-                condition: category === 'livros' ? document.getElementById('editProdCondition').value : 'novo'
+                condition: category === 'livros' ? document.getElementById('editProdCondition').value : 'novo',
+                ...shipping
             };
 
             const { error } = await supabaseClient.from('products').update(updatedProduct).eq('id', id);
@@ -781,7 +852,7 @@
                 closeEditProductModal();
                 showNotification("Alterações enviadas para a loja!");
                 carregarDadosDoSupabase();
-            }
+            } else { console.error(error); alert("Não foi possível salvar as alterações."); }
         }
 
         async function removeAdminProduct(id) {
@@ -881,6 +952,10 @@
             document.getElementById('editProdBadge').value = product.badge || '';
             document.getElementById('editProdDescription').value = product.description;
             document.getElementById('editProdCondition').value = product.condition || 'novo';
+            document.getElementById('editProdWeight').value = product.weight_kg ?? '';
+            document.getElementById('editProdLength').value = product.length_cm ?? '';
+            document.getElementById('editProdWidth').value = product.width_cm ?? '';
+            document.getElementById('editProdHeight').value = product.height_cm ?? '';
             toggleConditionField('edit');
             document.getElementById('editProductModal').classList.remove('hidden');
         }
