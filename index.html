@@ -1538,6 +1538,21 @@
             }
 
             document.getElementById('pdCurrentPrice').innerText = `R$ ${product.price.toFixed(2).replace('.', ',')}`;
+
+            // Preço riscado: só aparece se o vendedor cadastrou um valor antigo MAIOR que o preço atual
+            const oldPrice = Number(product.originalPrice);
+            const curPrice = Number(product.price);
+            const oldPriceEl = document.getElementById('pdOriginalPrice');
+            const discountEl = document.getElementById('pdDiscountBadge');
+            if (oldPrice > curPrice && curPrice > 0) {
+                oldPriceEl.innerText = `R$ ${oldPrice.toFixed(2).replace('.', ',')}`;
+                oldPriceEl.classList.remove('hidden');
+                discountEl.innerText = `-${Math.round((1 - curPrice / oldPrice) * 100)}%`;
+                discountEl.classList.remove('hidden');
+            } else {
+                oldPriceEl.classList.add('hidden');
+                discountEl.classList.add('hidden');
+            }
             document.getElementById('pdDescription').innerText = product.description;
             document.getElementById('pdQtyValue').innerText = activePageQuantity;
 
