@@ -494,6 +494,11 @@
     </div>
 
     <script>
+        // Segurança: escapa texto vindo de usuários antes de usar em innerHTML
+        function esc(v) {
+            return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        }
+
         // CONFIGURAÇÃO SUPABASE
         const supabaseUrl = 'https://ufbxxfyhllndprwjctuk.supabase.co';
         const supabaseKey = 'sb_publishable_Udm_iff3YpLFrWkzukh7LQ_AcB7t30M';
@@ -600,7 +605,7 @@
             container.innerHTML = orders.map(order => {
                 let itemsHtml = '';
                 if (Array.isArray(order.items)) {
-                    itemsHtml = order.items.map(i => `<span class="block text-[11px] text-gray-600">• ${i.quantity || 1}x ${i.name || 'Produto'} (R$ ${(i.price || 0).toFixed(2)})</span>`).join('');
+                    itemsHtml = order.items.map(i => `<span class="block text-[11px] text-gray-600">• ${Number(i.quantity) || 1}x ${esc(i.name || 'Produto')} (R$ ${(Number(i.price) || 0).toFixed(2)})</span>`).join('');
                 }
                 const cust = order.customers || {};
 
@@ -608,24 +613,24 @@
                     <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-xs space-y-2">
                         <div class="flex justify-between items-center border-b pb-2">
                             <div>
-                                <span class="font-black text-cdcHeader text-sm">Pedido #${order.id}</span>
+                                <span class="font-black text-cdcHeader text-sm">Pedido #${Number(order.id)}</span>
                                 <span class="text-[10px] text-gray-400 ml-2">${new Date(order.created_at).toLocaleString('pt-BR')}</span>
                             </div>
                             <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${order.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-yellow-100 text-yellow-800'}">
-                                ${order.status}
+                                ${esc(order.status)}
                             </span>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-gray-700 bg-white p-2.5 rounded-lg border">
-                            <div><strong>Cliente:</strong> ${cust.name || 'Não informado'}</div>
-                            <div><strong>CPF/CNPJ:</strong> ${cust.cpf_cnpj || 'Não informado'}</div>
+                            <div><strong>Cliente:</strong> ${esc(cust.name || 'Não informado')}</div>
+                            <div><strong>CPF/CNPJ:</strong> ${esc(cust.cpf_cnpj || 'Não informado')}</div>
                             <div class="sm:col-span-2"><strong>Itens:</strong><div class="mt-1">${itemsHtml}</div></div>
                         </div>
                         <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 border-t">
                             <span class="font-black text-navy-900">Total: R$ ${(order.total_amount || 0).toFixed(2).replace('.', ',')}</span>
                             <div class="flex items-center gap-2 w-full sm:w-auto">
-                                <input type="text" id="trackingInput_${order.id}" value="${order.tracking_code || ''}" placeholder="Código de Rastreio (Ex: AB123456789BR)" 
+                                <input type="text" id="trackingInput_${Number(order.id)}" value="${esc(order.tracking_code || '')}" placeholder="Código de Rastreio (Ex: AB123456789BR)" 
                                        class="px-3 py-1.5 text-xs bg-white border border-gray-300 rounded-lg flex-grow sm:w-64 outline-none focus:border-blue-500">
-                                <button onclick="salvarRastreio(${order.id})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">
+                                <button onclick="salvarRastreio(${Number(order.id)})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">
                                     Salvar Rastreio
                                 </button>
                             </div>
@@ -664,16 +669,16 @@
             if (adminBannersContainer) {
                 adminBannersContainer.innerHTML = bannersData.map(b => {
                     let displayTarget = '';
-                    if (b.targetType === 'categoria') displayTarget = `<span class="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-[9px] uppercase font-bold">Cat: ${b.targetValue}</span>`;
+                    if (b.targetType === 'categoria') displayTarget = `<span class="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-[9px] uppercase font-bold">Cat: ${esc(b.targetValue)}</span>`;
                     else if (b.targetType === 'produto') {
                         const p = productsData.find(prod => prod.id == b.targetValue);
-                        displayTarget = `<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[9px] uppercase font-bold">Prod: ${p ? p.name : b.targetValue}</span>`;
+                        displayTarget = `<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[9px] uppercase font-bold">Prod: ${esc(p ? p.name : b.targetValue)}</span>`;
                     } else displayTarget = `<span class="bg-gray-200 text-gray-800 px-1.5 py-0.5 rounded text-[9px] uppercase font-bold">URL Externa</span>`;
 
                     return `
                     <div class="draggable-item flex items-center gap-3 p-2 bg-gray-50 rounded-lg border text-xs cursor-move hover:border-amber-400 bg-white" draggable="true" data-id="${b.id}" data-type="banner">
                         <i class="fas fa-grip-vertical text-gray-300 ml-1"></i>
-                        <img src="${b.image}" class="w-16 h-10 object-cover rounded shadow-sm">
+                        <img src="${esc(b.image)}" class="w-16 h-10 object-cover rounded shadow-sm">
                         <div class="flex-grow min-w-0 space-y-1">
                             <div>${displayTarget}</div>
                             <span class="text-[9px] text-gray-500 block">${formatDateBR(b.startDate)} até ${formatDateBR(b.endDate)}</span>
@@ -696,9 +701,9 @@
                 adminProductsContainer.innerHTML = filteredList.map(p => `
                     <div class="draggable-item flex items-center gap-3 p-2 bg-gray-50 rounded-lg border text-xs cursor-move hover:border-emerald-400 bg-white" draggable="true" data-id="${p.id}" data-type="product">
                         <i class="fas fa-grip-vertical text-gray-300 ml-1"></i>
-                        <img src="${p.image}" class="w-10 h-10 object-cover rounded shadow-sm">
+                        <img src="${esc(p.image)}" class="w-10 h-10 object-cover rounded shadow-sm">
                         <div class="flex-grow min-w-0">
-                            <h5 class="font-bold truncate text-[11px] text-navy-900">${p.name}</h5>
+                            <h5 class="font-bold truncate text-[11px] text-navy-900">${esc(p.name)}</h5>
                             <span class="text-[10px] text-emerald-600 font-bold">R$ ${p.price.toFixed(2)}</span>
                             <span class="text-[9px] text-gray-400 ml-2">Estoque: ${p.stock}</span>
                         </div>

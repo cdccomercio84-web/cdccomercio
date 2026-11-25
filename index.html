@@ -825,6 +825,12 @@
 
     <!-- JAVASCRIPT -->
     <script>
+        // Segurança: escapa texto vindo de usuários antes de usar em innerHTML
+        function esc(v) {
+            return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        }
+        function safeCode(v) { return String(v ?? '').replace(/[^A-Za-z0-9]/g, '').slice(0, 30); }
+
         // ==========================================
         // 1. CONFIGURAÇÃO SUPABASE
         // ==========================================
@@ -1105,7 +1111,7 @@
             const filterName = document.getElementById('activeFilterName');
             if (currentCategory !== 'todos' || searchQuery !== '') {
                 filterBadge.classList.remove('hidden');
-                filterName.innerHTML = `${currentCategory !== 'todos' ? 'Categoria: ' + currentCategory : ''} ${searchQuery ? 'Busca: "' + searchQuery + '"' : ''} <button onclick="resetFilters()"><i class="fas fa-times"></i></button>`;
+                filterName.innerHTML = `${currentCategory !== 'todos' ? 'Categoria: ' + esc(currentCategory) : ''} ${searchQuery ? 'Busca: "' + esc(searchQuery) + '"' : ''} <button onclick="resetFilters()"><i class="fas fa-times"></i></button>`;
             } else {
                 filterBadge.classList.add('hidden');
             }
@@ -1208,13 +1214,13 @@
             container.innerHTML = comments.map(c => `
                 <div class="p-2.5 bg-white rounded-xl border border-gray-200 shadow-sm space-y-1 text-xs">
                     <div class="flex items-center justify-between">
-                        <span class="font-bold text-navy-900">${c.author}</span>
+                        <span class="font-bold text-navy-900">${esc(c.author)}</span>
                         <span class="text-[9px] text-gray-400">${new Date(c.created_at).toLocaleDateString('pt-BR')}</span>
                     </div>
                     <div class="flex text-yellow-400 text-[10px] mb-1">
-                        ${renderStarsHTML(c.rating)}
+                        ${renderStarsHTML(Number(c.rating) || 0)}
                     </div>
-                    <p class="text-gray-600 text-[11px]">${c.text}</p>
+                    <p class="text-gray-600 text-[11px]">${esc(c.text)}</p>
                 </div>
             `).join('');
         }
@@ -1312,6 +1318,7 @@
         }
 
         async function fetchCorreiosTimeline(trackingCode, containerId) {
+            trackingCode = safeCode(trackingCode);
             const box = document.getElementById(containerId);
             if (!box || !trackingCode) return;
 
@@ -1333,7 +1340,7 @@
                     box.innerHTML = `
                         <div class="p-2.5 bg-blue-50/70 border border-blue-200 rounded-lg text-[11px] text-blue-900">
                             <i class="fas fa-info-circle mr-1"></i>
-                            Código <strong>${trackingCode}</strong> registrado. Ainda não há movimentações detalhadas retornadas pela API dos Correios ou o objeto aguarda postagem.
+                            Código <strong>${esc(trackingCode)}</strong> registrado. Ainda não há movimentações detalhadas retornadas pela API dos Correios ou o objeto aguarda postagem.
                         </div>
                     `;
                     return;
@@ -1354,10 +1361,10 @@
                             return `
                                 <div class="relative text-[11px]">
                                     <span class="w-2.5 h-2.5 rounded-full ${idx === 0 ? "bg-emerald-500" : "bg-cdcHeader"} absolute -left-[17px] top-1 border-2 border-white"></span>
-                                    <div class="font-bold text-navy-900">${ev.description}</div>
-                                    ${ev.detail ? `<div class="text-gray-600 text-[10px]">${ev.detail}</div>` : ""}
+                                    <div class="font-bold text-navy-900">${esc(ev.description)}</div>
+                                    ${ev.detail ? `<div class="text-gray-600 text-[10px]">${esc(ev.detail)}</div>` : ""}
                                     <div class="text-[10px] text-gray-500 flex flex-wrap gap-2 mt-0.5">
-                                        <span><i class="fas fa-map-marker-alt text-red-400 mr-0.5"></i>${ev.location}</span>
+                                        <span><i class="fas fa-map-marker-alt text-red-400 mr-0.5"></i>${esc(ev.location)}</span>
                                         ${formattedDate ? `<span>• ${formattedDate}</span>` : ""}
                                     </div>
                                 </div>
@@ -1369,7 +1376,7 @@
                 console.error("Erro ao buscar rastreio:", err);
                 box.innerHTML = `
                     <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800">
-                        Não foi possível atualizar os eventos dos Correios agora. Você pode acompanhar pelo código <strong>${trackingCode}</strong>.
+                        Não foi possível atualizar os eventos dos Correios agora. Você pode acompanhar pelo código <strong>${esc(trackingCode)}</strong>.
                     </div>
                 `;
             }
@@ -1430,7 +1437,7 @@
                 resultContainer.innerHTML = ordersData.map((order, idx) => {
                     let itemsHtml = '';
                     if (Array.isArray(order.items)) {
-                        itemsHtml = order.items.map(i => `<span class="block text-[11px] text-gray-600">• ${i.quantity || 1}x ${i.name || 'Produto'} (R$ ${(i.price || 0).toFixed(2)})</span>`).join('');
+                        itemsHtml = order.items.map(i => `<span class="block text-[11px] text-gray-600">• ${Number(i.quantity) || 1}x ${esc(i.name || 'Produto')} (R$ ${(Number(i.price) || 0).toFixed(2)})</span>`).join('');
                     }
 
                     const steps = getOrderProgressSteps(order);
@@ -1445,14 +1452,14 @@
                         </div>
                     `;
 
-                    const timelineContainerId = `correiosTimeline_${order.id || idx}`;
+                    const timelineContainerId = `correiosTimeline_${Number(order.id) || idx}`;
 
                     return `
                         <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2.5 text-xs">
                             <div class="flex justify-between items-center border-b pb-2">
-                                <span class="font-bold text-cdcHeader">Pedido #${order.id}</span>
+                                <span class="font-bold text-cdcHeader">Pedido #${esc(order.id)}</span>
                                 <span class="px-2 py-0.5 rounded text-[10px] font-bold ${order.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-yellow-100 text-yellow-800'}">
-                                    Status: ${order.status}
+                                    Status: ${esc(order.status)}
                                 </span>
                             </div>
 
@@ -1471,13 +1478,13 @@
                                     <div class="flex items-center justify-between gap-2 flex-wrap">
                                         <div>
                                             <span class="block font-bold text-blue-900">📦 Código de Rastreio (Correios):</span>
-                                            <span class="font-mono text-blue-700 font-semibold">${order.tracking_code}</span>
+                                            <span class="font-mono text-blue-700 font-semibold">${esc(safeCode(order.tracking_code))}</span>
                                         </div>
                                         <div class="flex items-center gap-1.5">
-                                            <button type="button" onclick="fetchCorreiosTimeline('${order.tracking_code}', '${timelineContainerId}')" class="bg-cdcHeader hover:bg-cdcDark text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition">
+                                            <button type="button" onclick="fetchCorreiosTimeline('${safeCode(order.tracking_code)}', '${timelineContainerId}')" class="bg-cdcHeader hover:bg-cdcDark text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition">
                                                 Atualizar
                                             </button>
-                                            <a href="https://www.linkcorreios.com.br/?id=${order.tracking_code}" target="_blank" rel="noopener noreferrer" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition">
+                                            <a href="https://www.linkcorreios.com.br/?id=${safeCode(order.tracking_code)}" target="_blank" rel="noopener noreferrer" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition">
                                                 Rastrear
                                             </a>
                                         </div>
@@ -1496,7 +1503,7 @@
                 // Consulta automaticamente os eventos dos Correios para pedidos com código de rastreio
                 ordersData.forEach((order, idx) => {
                     if (order.tracking_code) {
-                        fetchCorreiosTimeline(order.tracking_code, `correiosTimeline_${order.id || idx}`);
+                        fetchCorreiosTimeline(order.tracking_code, `correiosTimeline_${Number(order.id) || idx}`);
                     }
                 });
 
