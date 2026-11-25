@@ -108,6 +108,9 @@
                 <!-- MENU LATERAL (ESQUERDA) -->
                 <div class="md:col-span-3 bg-white border border-gray-200 rounded-2xl p-4 shadow-sm space-y-2 sticky top-20">
                     <h3 class="font-extrabold text-navy-900 text-xs mb-3 border-b pb-2 uppercase tracking-wider text-gray-400">Navegação</h3>
+                    <button onclick="switchAdminTab('resumo')" id="tabBtnResumo" class="admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-chart-line text-sm"></i> Resumo da Loja
+                    </button>
                     <button onclick="switchAdminTab('banners')" id="tabBtnBanners" class="admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 bg-cdcHeader text-white">
                         <i class="fas fa-images text-sm"></i> Gerenciar Banners
                     </button>
@@ -117,11 +120,35 @@
                     <button onclick="switchAdminTab('pedidos')" id="tabBtnPedidos" class="admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 text-gray-700 hover:bg-gray-100">
                         <i class="fas fa-truck text-sm"></i> Pedidos e Rastreio
                     </button>
+                    <button onclick="switchAdminTab('avaliacoes')" id="tabBtnAvaliacoes" class="admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-comments text-sm"></i> Avaliações
+                    </button>
+                    <button onclick="switchAdminTab('cupons')" id="tabBtnCupons" class="admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-ticket-alt text-sm"></i> Cupons de Desconto
+                    </button>
+                    <button onclick="switchAdminTab('config')" id="tabBtnConfig" class="admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-cog text-sm"></i> Configurações de Frete
+                    </button>
                 </div>
 
                 <!-- CONTEÚDO PRINCIPAL (DIREITA) -->
                 <div class="md:col-span-9 space-y-6">
                     
+                    <!-- SEÇÃO: RESUMO -->
+                    <div id="adminSectionResumo" class="space-y-6 hidden">
+                        <div class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm space-y-4">
+                            <div class="flex items-center justify-between border-b pb-2">
+                                <h3 class="text-sm font-black text-navy-900 flex items-center gap-2"><i class="fas fa-chart-line text-blue-600"></i> Resumo da Loja</h3>
+                                <button onclick="carregarResumoAdmin()" class="bg-blue-50 text-blue-700 text-xs px-3 py-1.5 rounded-lg font-bold hover:bg-blue-100 transition"><i class="fas fa-sync-alt mr-1"></i> Atualizar</button>
+                            </div>
+                            <div id="adminSummaryCards" class="grid grid-cols-2 lg:grid-cols-3 gap-3"><p class="text-xs text-gray-400 col-span-full text-center py-4">Carregando...</p></div>
+                            <div>
+                                <h4 class="text-xs font-black text-navy-900 mb-2"><i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i> Produtos com estoque baixo (5 ou menos) ou sem peso/medidas</h4>
+                                <div id="adminLowStockList" class="space-y-1.5"></div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- SEÇÃO 1: BANNERS -->
                     <div id="adminSectionBanners" class="space-y-6">
                         <div class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm space-y-4">
@@ -270,6 +297,17 @@
                                     </div>
                                 </div>
 
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-gray-700 mb-1">Produto visível na loja?</label>
+                                        <select id="newProdActive" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"><option value="true" selected>Sim (ativo)</option><option value="false">Não (oculto)</option></select>
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label class="block text-[11px] font-semibold text-gray-700 mb-1">Fotos extras (uma URL por linha, até 8)</label>
+                                        <textarea id="newProdImages" rows="2" placeholder="https://..." class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none resize-none"></textarea>
+                                    </div>
+                                </div>
+
                                 <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl space-y-2">
                                     <div class="text-[11px] font-bold text-blue-900"><i class="fas fa-box mr-1"></i> Dados da embalagem para o frete (Correios)</div>
                                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -355,9 +393,80 @@
                             </div>
                             <p class="text-xs text-gray-500">Adicione ou atualize o código de rastreio dos Correios para que o cliente possa acompanhar a entrega na Área do Comprador.</p>
                             
+                            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                                <input type="text" id="adminOrderSearch" oninput="renderAdminOrders()" placeholder="Buscar nº, nome, CPF ou rastreio" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none col-span-2">
+                                <select id="adminOrderStatusFilter" onchange="renderAdminOrders()" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none">
+                                    <option value="">Todos os status</option>
+                                    <option value="PENDING">Aguardando pagamento</option><option value="PAID">Pago</option><option value="SHIPPED">Enviado</option>
+                                    <option value="DELIVERED">Entregue</option><option value="CANCELLED">Cancelado</option><option value="REFUNDED">Reembolsado</option><option value="FAILED">Falhou</option>
+                                </select>
+                                <input type="date" id="adminOrderFrom" onchange="renderAdminOrders()" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none" title="De">
+                                <input type="date" id="adminOrderTo" onchange="renderAdminOrders()" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none" title="Até">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span id="adminOrdersCount" class="text-[11px] text-gray-500"></span>
+                                <button onclick="exportOrdersCsv()" class="bg-emerald-50 text-emerald-700 text-xs px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-100 transition"><i class="fas fa-file-csv mr-1"></i> Exportar planilha (CSV)</button>
+                            </div>
                             <div id="adminOrdersList" class="space-y-3 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
                                 <p class="text-xs text-gray-400 text-center py-6">Carregando pedidos...</p>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO: AVALIAÇÕES -->
+                    <div id="adminSectionAvaliacoes" class="space-y-6 hidden">
+                        <div class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm space-y-4">
+                            <div class="flex items-center justify-between border-b pb-2">
+                                <h3 class="text-sm font-black text-navy-900 flex items-center gap-2"><i class="fas fa-comments text-blue-600"></i> Moderar Avaliações</h3>
+                                <button onclick="carregarComentariosAdmin()" class="bg-blue-50 text-blue-700 text-xs px-3 py-1.5 rounded-lg font-bold hover:bg-blue-100 transition"><i class="fas fa-sync-alt mr-1"></i> Atualizar</button>
+                            </div>
+                            <p class="text-xs text-gray-500">Apague comentários ofensivos, falsos ou de spam. A nota média do produto é recalculada automaticamente.</p>
+                            <div id="adminCommentsList" class="space-y-2 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar"></div>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO: CUPONS -->
+                    <div id="adminSectionCupons" class="space-y-6 hidden">
+                        <div class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm space-y-4">
+                            <h3 class="text-sm font-black text-navy-900 border-b pb-2 flex items-center gap-2"><i class="fas fa-ticket-alt text-emerald-600"></i> Novo Cupom de Desconto</h3>
+                            <form onsubmit="handleAddCoupon(event)" class="space-y-3">
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                    <div><label class="block text-[11px] font-semibold text-gray-700 mb-1">Código</label><input type="text" id="newCouponCode" required maxlength="30" placeholder="BEMVINDO10" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none uppercase"></div>
+                                    <div><label class="block text-[11px] font-semibold text-gray-700 mb-1">Tipo</label>
+                                        <select id="newCouponType" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"><option value="percent">Porcentagem (%)</option><option value="fixed">Valor fixo (R$)</option></select></div>
+                                    <div><label class="block text-[11px] font-semibold text-gray-700 mb-1">Valor</label><input type="text" inputmode="decimal" id="newCouponValue" required placeholder="10" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"></div>
+                                    <div><label class="block text-[11px] font-semibold text-gray-700 mb-1">Pedido mínimo (R$)</label><input type="text" inputmode="decimal" id="newCouponMin" placeholder="0" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"></div>
+                                    <div><label class="block text-[11px] font-semibold text-gray-700 mb-1">Limite de usos</label><input type="number" min="1" id="newCouponMaxUses" placeholder="Sem limite" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"></div>
+                                    <div><label class="block text-[11px] font-semibold text-gray-700 mb-1">Válido até</label><input type="date" id="newCouponExpires" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"></div>
+                                </div>
+                                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 px-5 rounded-xl transition shadow"><i class="fas fa-plus mr-1"></i> Criar Cupom</button>
+                            </form>
+                        </div>
+                        <div class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm space-y-4">
+                            <h3 class="text-sm font-black text-navy-900 border-b pb-2">Cupons cadastrados</h3>
+                            <div id="adminCouponsList" class="space-y-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO: CONFIGURAÇÕES DE FRETE -->
+                    <div id="adminSectionConfig" class="space-y-6 hidden">
+                        <div class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm space-y-4">
+                            <h3 class="text-sm font-black text-navy-900 border-b pb-2 flex items-center gap-2"><i class="fas fa-cog text-blue-600"></i> Configurações de Frete</h3>
+                            <form onsubmit="salvarConfigAdmin(event)" class="space-y-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><label class="block text-[11px] font-semibold text-gray-700 mb-1">Calcular frete pelos Correios?</label>
+                                        <select id="cfgUseCorreios" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"><option value="false">Não (usar valores fixos de R$ 12,00 / R$ 24,50)</option><option value="true">Sim (PAC e SEDEX pelo peso e medidas)</option></select></div>
+                                    <div><label class="block text-[11px] font-semibold text-gray-700 mb-1">CEP de origem (de onde você posta)</label><input type="text" inputmode="numeric" id="cfgOriginCep" maxlength="9" placeholder="00000-000" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"></div>
+                                    <div><label class="block text-[11px] font-semibold text-gray-700 mb-1">Oferecer PAC?</label><select id="cfgPacEnabled" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"><option value="true">Sim</option><option value="false">Não</option></select></div>
+                                    <div><label class="block text-[11px] font-semibold text-gray-700 mb-1">Oferecer SEDEX?</label><select id="cfgSedexEnabled" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"><option value="true">Sim</option><option value="false">Não</option></select></div>
+                                    <div><label class="block text-[11px] font-semibold text-gray-700 mb-1">Código do serviço PAC (contrato)</label><input type="text" id="cfgPacCode" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"></div>
+                                    <div><label class="block text-[11px] font-semibold text-gray-700 mb-1">Código do serviço SEDEX (contrato)</label><input type="text" id="cfgSedexCode" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"></div>
+                                    <div><label class="block text-[11px] font-semibold text-gray-700 mb-1">Dias para separar e postar</label><input type="number" min="0" max="30" id="cfgHandlingDays" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"></div>
+                                    <div><label class="block text-[11px] font-semibold text-gray-700 mb-1">Frete grátis acima de (R$) — opcional</label><input type="text" inputmode="decimal" id="cfgFreeMin" placeholder="Vazio = desligado" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"></div>
+                                </div>
+                                <p class="text-[10px] text-gray-500">Se os Correios não responderem, ou algum produto estiver sem peso/medidas, o site usa automaticamente os valores fixos (R$ 12,00 para CEPs 72/73 e R$ 24,50 para o resto), então o cliente nunca fica sem frete.</p>
+                                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 px-5 rounded-xl transition shadow"><i class="fas fa-save mr-1"></i> Salvar Configurações</button>
+                            </form>
                         </div>
                     </div>
 
@@ -421,6 +530,17 @@
                             </select>
                         </div>
                     </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-700 mb-1">Produto visível na loja?</label>
+                            <select id="editProdActive" class="w-full px-3 py-2 text-xs border rounded-lg bg-gray-50 outline-none"><option value="true" selected>Sim (ativo)</option><option value="false">Não (oculto)</option></select>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-[11px] font-semibold text-gray-700 mb-1">Fotos extras (uma URL por linha, até 8)</label>
+                            <textarea id="editProdImages" rows="2" placeholder="https://..." class="w-full px-3 py-2 text-xs border rounded-lg bg-gray-50 outline-none resize-none"></textarea>
+                        </div>
+                    </div>
+
                         <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl space-y-2">
                             <div class="text-[11px] font-bold text-blue-900"><i class="fas fa-box mr-1"></i> Dados da embalagem para o frete (Correios)</div>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -558,26 +678,23 @@
         });
 
         // TROCAR ABAS DO PAINEL LATERAL
+        const ADMIN_TABS = ['resumo', 'banners', 'produtos', 'pedidos', 'avaliacoes', 'cupons', 'config'];
+        const TAB_CLS_ON = "admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 bg-cdcHeader text-white";
+        const TAB_CLS_OFF = "admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 text-gray-700 hover:bg-gray-100";
+        const tabId = t => t.charAt(0).toUpperCase() + t.slice(1);
+
         function switchAdminTab(tabName) {
-            document.getElementById('adminSectionBanners').classList.add('hidden');
-            document.getElementById('adminSectionProdutos').classList.add('hidden');
-            document.getElementById('adminSectionPedidos').classList.add('hidden');
-
-            document.getElementById('tabBtnBanners').className = "admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 text-gray-700 hover:bg-gray-100";
-            document.getElementById('tabBtnProdutos').className = "admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 text-gray-700 hover:bg-gray-100";
-            document.getElementById('tabBtnPedidos').className = "admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 text-gray-700 hover:bg-gray-100";
-
-            if (tabName === 'banners') {
-                document.getElementById('adminSectionBanners').classList.remove('hidden');
-                document.getElementById('tabBtnBanners').className = "admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 bg-cdcHeader text-white";
-            } else if (tabName === 'produtos') {
-                document.getElementById('adminSectionProdutos').classList.remove('hidden');
-                document.getElementById('tabBtnProdutos').className = "admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 bg-cdcHeader text-white";
-            } else if (tabName === 'pedidos') {
-                document.getElementById('adminSectionPedidos').classList.remove('hidden');
-                document.getElementById('tabBtnPedidos').className = "admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 bg-cdcHeader text-white";
-                carregarPedidosAdmin();
-            }
+            ADMIN_TABS.forEach(t => {
+                const sec = document.getElementById('adminSection' + tabId(t));
+                const btn = document.getElementById('tabBtn' + tabId(t));
+                if (sec) sec.classList.toggle('hidden', t !== tabName);
+                if (btn) btn.className = (t === tabName) ? TAB_CLS_ON : TAB_CLS_OFF;
+            });
+            if (tabName === 'resumo') carregarResumoAdmin();
+            else if (tabName === 'pedidos') carregarPedidosAdmin();
+            else if (tabName === 'avaliacoes') carregarComentariosAdmin();
+            else if (tabName === 'cupons') carregarCuponsAdmin();
+            else if (tabName === 'config') carregarConfigAdmin();
         }
 
         // 1. SISTEMA DE LOGIN INTEGRADO AO SUPABASE
@@ -601,7 +718,9 @@
             document.getElementById('logoutBtn').classList.remove('hidden');
             document.getElementById('logoutBtn').classList.add('flex');
             showNotification("Acesso Liberado!");
+            await carregarDadosDoSupabase();
             renderAdminLists();
+            switchAdminTab('resumo');
         }
 
         async function handleAdminLogout() {
@@ -634,6 +753,18 @@
             }
         }
 
+        const ORDER_STATUS = {
+            PENDING: 'Aguardando pagamento', PAID: 'Pago', SHIPPED: 'Enviado', DELIVERED: 'Entregue',
+            CANCELLED: 'Cancelado', REFUNDED: 'Reembolsado', FAILED: 'Falhou'
+        };
+        const ORDER_BADGE = {
+            PENDING: 'bg-yellow-100 text-yellow-800', PAID: 'bg-emerald-100 text-emerald-800', SHIPPED: 'bg-blue-100 text-blue-800',
+            DELIVERED: 'bg-green-200 text-green-900', CANCELLED: 'bg-gray-200 text-gray-700', REFUNDED: 'bg-purple-100 text-purple-800', FAILED: 'bg-red-100 text-red-800'
+        };
+        const PAID_STATUSES = ['PAID', 'SHIPPED', 'DELIVERED'];
+        let adminOrdersCache = [];
+        const brl = n => 'R$ ' + (Number(n) || 0).toFixed(2).replace('.', ',');
+
         async function carregarPedidosAdmin() {
             const container = document.getElementById('adminOrdersList');
             container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4"><i class="fas fa-spinner fa-spin"></i> Carregando pedidos...</p>`;
@@ -643,43 +774,82 @@
                 .select('*, customers(name, cpf_cnpj, email, phone)')
                 .order('created_at', { ascending: false });
 
-            if (error || !orders || orders.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-6">Nenhum pedido encontrado no sistema.</p>`;
+            if (error) {
+                console.error(error);
+                container.innerHTML = `<p class="text-xs text-red-500 text-center py-6">Não foi possível carregar os pedidos.</p>`;
                 return;
             }
+            adminOrdersCache = orders || [];
+            renderAdminOrders();
+        }
 
-            container.innerHTML = orders.map(order => {
+        function getFilteredOrders() {
+            const q = (document.getElementById('adminOrderSearch')?.value || '').trim().toLowerCase();
+            const qDigits = q.replace(/\D/g, '');
+            const st = document.getElementById('adminOrderStatusFilter')?.value || '';
+            const from = document.getElementById('adminOrderFrom')?.value || '';
+            const to = document.getElementById('adminOrderTo')?.value || '';
+            return adminOrdersCache.filter(o => {
+                const cust = o.customers || {};
+                if (st && o.status !== st) return false;
+                const day = new Date(o.created_at).toLocaleDateString('en-CA');
+                if (from && day < from) return false;
+                if (to && day > to) return false;
+                if (!q) return true;
+                return String(o.id) === q.replace('#', '')
+                    || (cust.name || '').toLowerCase().includes(q)
+                    || (qDigits && String(cust.cpf_cnpj || '').includes(qDigits))
+                    || (o.tracking_code || '').toLowerCase().includes(q);
+            });
+        }
+
+        function renderAdminOrders() {
+            const container = document.getElementById('adminOrdersList');
+            const list = getFilteredOrders();
+            document.getElementById('adminOrdersCount').innerText = `${list.length} de ${adminOrdersCache.length} pedido(s)`;
+            if (list.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-6">Nenhum pedido encontrado.</p>`;
+                return;
+            }
+            container.innerHTML = list.map(order => {
                 let itemsHtml = '';
                 if (Array.isArray(order.items)) {
-                    itemsHtml = order.items.map(i => `<span class="block text-[11px] text-gray-600">• ${Number(i.quantity) || 1}x ${esc(i.name || 'Produto')} (R$ ${(Number(i.price) || 0).toFixed(2)})</span>`).join('');
+                    itemsHtml = order.items.map(i => `<span class="block text-[11px] text-gray-600">• ${Number(i.quantity) || 1}x ${esc(i.name || 'Produto')} (${brl(i.price)})</span>`).join('');
                 }
                 const cust = order.customers || {};
+                const oid = Number(order.id);
+                const statusOptions = Object.keys(ORDER_STATUS).map(k => `<option value="${k}" ${k === order.status ? 'selected' : ''}>${ORDER_STATUS[k]}</option>`).join('');
+                const extras = [
+                    Number(order.freight_amount) > 0 ? `Frete ${brl(order.freight_amount)}` : 'Frete grátis',
+                    Number(order.discount_amount) > 0 ? `Desconto ${brl(order.discount_amount)}${order.coupon_code ? ' (' + esc(order.coupon_code) + ')' : ''}` : ''
+                ].filter(Boolean).join(' · ');
 
                 return `
                     <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-xs space-y-2">
-                        <div class="flex justify-between items-center border-b pb-2">
+                        <div class="flex flex-wrap justify-between items-center gap-2 border-b pb-2">
                             <div>
-                                <span class="font-black text-cdcHeader text-sm">Pedido #${Number(order.id)}</span>
+                                <span class="font-black text-cdcHeader text-sm">Pedido #${oid}</span>
                                 <span class="text-[10px] text-gray-400 ml-2">${new Date(order.created_at).toLocaleString('pt-BR')}</span>
                             </div>
-                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${order.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-yellow-100 text-yellow-800'}">
-                                ${esc(order.status)}
-                            </span>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${ORDER_BADGE[order.status] || 'bg-gray-100 text-gray-700'}">${esc(ORDER_STATUS[order.status] || order.status)}</span>
+                                <select onchange="updateOrderStatus(${oid}, this.value)" class="px-2 py-1 text-[11px] bg-white border border-gray-300 rounded-lg outline-none" title="Alterar status">${statusOptions}</select>
+                            </div>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-gray-700 bg-white p-2.5 rounded-lg border">
                             <div><strong>Cliente:</strong> ${esc(cust.name || 'Não informado')}</div>
                             <div><strong>CPF/CNPJ:</strong> ${esc(cust.cpf_cnpj || 'Não informado')}</div>
-                            <div class="sm:col-span-2"><strong>Entrega:</strong> ${esc(order.shipping_address || 'Não informado')}</div>
+                            <div><strong>Telefone:</strong> ${esc(cust.phone || '—')}</div>
+                            <div><strong>E-mail:</strong> ${esc(cust.email || '—')}</div>
+                            <div class="sm:col-span-2"><strong>Entrega:</strong> ${esc(order.shipping_address || 'Não informado')} <span class="text-gray-400">(${esc(order.shipping_service || '—')})</span></div>
                             <div class="sm:col-span-2"><strong>Itens:</strong><div class="mt-1">${itemsHtml}</div></div>
                         </div>
                         <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 border-t">
-                            <span class="font-black text-navy-900">Total: R$ ${(order.total_amount || 0).toFixed(2).replace('.', ',')}</span>
+                            <span class="font-black text-navy-900">Total: ${brl(order.total_amount)} <span class="font-normal text-[10px] text-gray-400">${extras}</span></span>
                             <div class="flex items-center gap-2 w-full sm:w-auto">
-                                <input type="text" id="trackingInput_${Number(order.id)}" value="${esc(order.tracking_code || '')}" placeholder="Código de Rastreio (Ex: AB123456789BR)" 
+                                <input type="text" id="trackingInput_${oid}" value="${esc(order.tracking_code || '')}" placeholder="Código de Rastreio (Ex: AB123456789BR)"
                                        class="px-3 py-1.5 text-xs bg-white border border-gray-300 rounded-lg flex-grow sm:w-64 outline-none focus:border-blue-500">
-                                <button onclick="salvarRastreio(${Number(order.id)})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">
-                                    Salvar Rastreio
-                                </button>
+                                <button onclick="salvarRastreio(${oid})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Salvar Rastreio</button>
                             </div>
                         </div>
                     </div>
@@ -687,19 +857,217 @@
             }).join('');
         }
 
+        async function updateOrderStatus(orderId, newStatus) {
+            const order = adminOrdersCache.find(o => Number(o.id) === orderId);
+            if (!order || order.status === newStatus) return;
+            const wasPaid = PAID_STATUSES.includes(order.status);
+            const willBePaid = PAID_STATUSES.includes(newStatus);
+            let msg = `Mudar o pedido #${orderId} para "${ORDER_STATUS[newStatus]}"?`;
+            if (!wasPaid && willBePaid) msg += '\n\nO estoque dos produtos será reduzido automaticamente.';
+            if (wasPaid && !willBePaid) msg += '\n\nO estoque dos produtos será devolvido automaticamente.';
+            if (!confirm(msg)) { renderAdminOrders(); return; }
+
+            const { error } = await supabaseClient.from('orders').update({ status: newStatus }).eq('id', orderId);
+            if (error) { console.error(error); alert("Não foi possível alterar o status."); }
+            else { showNotification("Status atualizado!"); await carregarDadosDoSupabase(); }
+            carregarPedidosAdmin();
+        }
+
         async function salvarRastreio(orderId) {
-            const trackingCode = document.getElementById(`trackingInput_${orderId}`).value.trim();
-            const { error } = await supabaseClient
-                .from('orders')
-                .update({ tracking_code: trackingCode })
-                .eq('id', orderId);
+            const trackingCode = document.getElementById(`trackingInput_${orderId}`).value.trim().toUpperCase();
+            const order = adminOrdersCache.find(o => Number(o.id) === orderId);
+            const patch = { tracking_code: trackingCode };
+            // Pedido pago que recebe código de rastreio passa a "Enviado"
+            if (trackingCode && order && order.status === 'PAID') patch.status = 'SHIPPED';
+            const { error } = await supabaseClient.from('orders').update(patch).eq('id', orderId);
 
             if (!error) {
-                showNotification("Código de rastreio salvo com sucesso!");
+                showNotification(patch.status ? "Rastreio salvo e pedido marcado como Enviado!" : "Código de rastreio salvo com sucesso!");
                 carregarPedidosAdmin();
             } else {
                 alert("Erro ao salvar o código de rastreio.");
             }
+        }
+
+        function csvCell(v) {
+            let t = String(v ?? '').replace(/\r?\n/g, ' ');
+            if (/^[=+\-@\t]/.test(t)) t = "'" + t; // evita fórmulas em planilhas
+            return '"' + t.replace(/"/g, '""') + '"';
+        }
+
+        function exportOrdersCsv() {
+            const list = getFilteredOrders();
+            if (list.length === 0) { alert("Não há pedidos para exportar com os filtros atuais."); return; }
+            const header = ['Pedido', 'Data', 'Status', 'Cliente', 'CPF/CNPJ', 'Telefone', 'E-mail', 'Itens', 'Frete', 'Desconto', 'Cupom', 'Total', 'Entrega', 'Rastreio'];
+            const rows = list.map(o => {
+                const c = o.customers || {};
+                const itens = Array.isArray(o.items) ? o.items.map(i => `${i.quantity}x ${i.name}`).join(' | ') : '';
+                return [o.id, new Date(o.created_at).toLocaleString('pt-BR'), ORDER_STATUS[o.status] || o.status, c.name, c.cpf_cnpj, c.phone, c.email,
+                        itens, Number(o.freight_amount || 0).toFixed(2).replace('.', ','), Number(o.discount_amount || 0).toFixed(2).replace('.', ','),
+                        o.coupon_code, Number(o.total_amount || 0).toFixed(2).replace('.', ','), o.shipping_address, o.tracking_code].map(csvCell).join(';');
+            });
+            const blob = new Blob(['\ufeff' + [header.map(csvCell).join(';'), ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `pedidos-cdc-${new Date().toLocaleDateString('en-CA')}.csv`;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        // ===== RESUMO =====
+        async function carregarResumoAdmin() {
+            const cards = document.getElementById('adminSummaryCards');
+            const { data: orders, error } = await supabaseClient.from('orders').select('id, created_at, status, total_amount, tracking_code');
+            if (error) { cards.innerHTML = `<p class="text-xs text-red-500 col-span-full text-center py-4">Não foi possível carregar o resumo.</p>`; return; }
+            const list = orders || [];
+            const today = new Date().toLocaleDateString('en-CA');
+            const month = today.slice(0, 7);
+            const dayOf = o => new Date(o.created_at).toLocaleDateString('en-CA');
+            const real = list.filter(o => !['FAILED', 'CANCELLED'].includes(o.status));
+            const paid = list.filter(o => PAID_STATUSES.includes(o.status));
+            const sum = arr => arr.reduce((t, o) => t + (Number(o.total_amount) || 0), 0);
+            const toShip = list.filter(o => o.status === 'PAID' && !o.tracking_code).length;
+            const pending = list.filter(o => o.status === 'PENDING').length;
+            const card = (icon, color, label, value) => `
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-3">
+                    <div class="text-[10px] font-bold text-gray-500 uppercase"><i class="fas ${icon} ${color} mr-1"></i>${label}</div>
+                    <div class="text-lg font-black text-navy-900 mt-1">${value}</div>
+                </div>`;
+            cards.innerHTML = [
+                card('fa-shopping-bag', 'text-blue-600', 'Pedidos hoje', real.filter(o => dayOf(o) === today).length),
+                card('fa-dollar-sign', 'text-emerald-600', 'Vendido hoje (pago)', brl(sum(paid.filter(o => dayOf(o) === today)))),
+                card('fa-calendar-alt', 'text-emerald-600', 'Vendido no mês (pago)', brl(sum(paid.filter(o => dayOf(o).startsWith(month))))),
+                card('fa-box', 'text-amber-600', 'Pagos para enviar', toShip),
+                card('fa-hourglass-half', 'text-yellow-600', 'Aguardando pagamento', pending),
+                card('fa-receipt', 'text-gray-600', 'Ticket médio (pagos)', paid.length ? brl(sum(paid) / paid.length) : brl(0))
+            ].join('');
+
+            const low = productsData.filter(p => Number(p.stock) <= 5 || !p.weight_kg);
+            document.getElementById('adminLowStockList').innerHTML = low.length === 0
+                ? `<p class="text-xs text-emerald-700">Tudo certo: nenhum produto com estoque baixo ou sem peso/medidas.</p>`
+                : low.map(p => `<div class="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 text-xs">
+                        <span class="font-bold text-navy-900 truncate">${esc(p.name)}</span>
+                        <span class="text-[10px] text-amber-800 whitespace-nowrap ml-2">${Number(p.stock) <= 5 ? 'Estoque: ' + Number(p.stock) : ''}${Number(p.stock) <= 5 && !p.weight_kg ? ' · ' : ''}${!p.weight_kg ? 'sem peso/medidas' : ''}</span>
+                    </div>`).join('');
+        }
+
+        // ===== AVALIAÇÕES =====
+        async function carregarComentariosAdmin() {
+            const box = document.getElementById('adminCommentsList');
+            const { data, error } = await supabaseClient.from('product_comments').select('*').order('id', { ascending: false }).limit(200);
+            if (error) { box.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Não foi possível carregar as avaliações.</p>`; return; }
+            if (!data || data.length === 0) { box.innerHTML = `<p class="text-xs text-gray-400 text-center py-6">Nenhuma avaliação ainda.</p>`; return; }
+            box.innerHTML = data.map(c => {
+                const p = productsData.find(x => x.id === c.product_id);
+                return `<div class="flex items-start gap-3 bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs">
+                    <div class="flex-grow min-w-0">
+                        <div class="flex flex-wrap items-center gap-x-2">
+                            <span class="font-bold text-navy-900">${esc(c.author)}</span>
+                            <span class="text-yellow-500">${'★'.repeat(Math.max(0, Math.min(5, Number(c.rating) || 0)))}</span>
+                            <span class="text-[10px] text-gray-400">${new Date(c.created_at).toLocaleDateString('pt-BR')} · ${esc(p ? p.name : 'Produto #' + Number(c.product_id))}</span>
+                        </div>
+                        <p class="text-gray-600 mt-1 break-words">${esc(c.text)}</p>
+                    </div>
+                    <button onclick="removerComentario(${Number(c.id)})" class="text-red-500 hover:bg-red-50 p-1.5 rounded" title="Apagar"><i class="fas fa-trash-alt"></i></button>
+                </div>`;
+            }).join('');
+        }
+
+        async function removerComentario(id) {
+            if (!confirm("Apagar esta avaliação?")) return;
+            const { error } = await supabaseClient.from('product_comments').delete().eq('id', id);
+            if (error) { alert("Não foi possível apagar."); return; }
+            showNotification("Avaliação apagada.");
+            carregarComentariosAdmin();
+        }
+
+        // ===== CUPONS =====
+        async function carregarCuponsAdmin() {
+            const box = document.getElementById('adminCouponsList');
+            const { data, error } = await supabaseClient.from('coupons').select('*').order('created_at', { ascending: false });
+            if (error) { box.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Não foi possível carregar os cupons.</p>`; return; }
+            if (!data || data.length === 0) { box.innerHTML = `<p class="text-xs text-gray-400 text-center py-6">Nenhum cupom criado.</p>`; return; }
+            const today = new Date().toLocaleDateString('en-CA');
+            box.innerHTML = data.map(c => {
+                const expired = c.expires_at && c.expires_at < today;
+                const desc = c.type === 'percent' ? `${Number(c.value)}% de desconto` : `${brl(c.value)} de desconto`;
+                return `<div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs">
+                    <div class="flex-grow min-w-0">
+                        <div class="font-black text-navy-900 tracking-wide">${esc(c.code)}
+                            <span class="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold ${c.active && !expired ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-200 text-gray-600'}">${expired ? 'Expirado' : (c.active ? 'Ativo' : 'Desligado')}</span></div>
+                        <div class="text-[10px] text-gray-500">${desc}${Number(c.min_order) > 0 ? ' · mínimo ' + brl(c.min_order) : ''} · usos: ${Number(c.uses)}${c.max_uses ? '/' + Number(c.max_uses) : ''}${c.expires_at ? ' · até ' + esc(formatDateBR(c.expires_at)) : ''}</div>
+                    </div>
+                    <button onclick="toggleCoupon(${Number(c.id)}, ${!c.active})" class="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded text-[10px] font-bold">${c.active ? 'Desligar' : 'Ligar'}</button>
+                    <button onclick="deleteCoupon(${Number(c.id)})" class="text-red-500 hover:bg-red-50 p-1.5 rounded" title="Apagar"><i class="fas fa-trash-alt"></i></button>
+                </div>`;
+            }).join('');
+        }
+
+        async function handleAddCoupon(e) {
+            e.preventDefault();
+            const code = document.getElementById('newCouponCode').value.trim().toUpperCase();
+            const type = document.getElementById('newCouponType').value;
+            const value = parseFloat(document.getElementById('newCouponValue').value.replace(',', '.'));
+            const minOrder = parseFloat((document.getElementById('newCouponMin').value || '0').replace(',', '.')) || 0;
+            const maxUsesRaw = document.getElementById('newCouponMaxUses').value;
+            const expires = document.getElementById('newCouponExpires').value;
+            if (!/^[A-Z0-9_-]{3,30}$/.test(code)) { alert("Use de 3 a 30 letras/números (sem espaços) no código."); return; }
+            if (!(value > 0)) { alert("Informe um valor maior que zero."); return; }
+            if (type === 'percent' && value > 100) { alert("A porcentagem não pode passar de 100."); return; }
+            const { error } = await supabaseClient.from('coupons').insert([{
+                code, type, value, min_order: minOrder, max_uses: maxUsesRaw ? parseInt(maxUsesRaw) : null, expires_at: expires || null
+            }]);
+            if (error) { console.error(error); alert(error.code === '23505' ? "Já existe um cupom com esse código." : "Não foi possível criar o cupom."); return; }
+            e.target.reset();
+            showNotification("Cupom criado!");
+            carregarCuponsAdmin();
+        }
+
+        async function toggleCoupon(id, active) {
+            const { error } = await supabaseClient.from('coupons').update({ active }).eq('id', id);
+            if (error) alert("Não foi possível alterar o cupom."); else carregarCuponsAdmin();
+        }
+
+        async function deleteCoupon(id) {
+            if (!confirm("Apagar este cupom?")) return;
+            const { error } = await supabaseClient.from('coupons').delete().eq('id', id);
+            if (error) alert("Não foi possível apagar o cupom."); else carregarCuponsAdmin();
+        }
+
+        // ===== CONFIGURAÇÕES DE FRETE =====
+        async function carregarConfigAdmin() {
+            const { data, error } = await supabaseClient.from('store_settings').select('*').eq('id', 1).maybeSingle();
+            if (error || !data) { console.error(error); return; }
+            document.getElementById('cfgUseCorreios').value = String(!!data.use_correios);
+            document.getElementById('cfgOriginCep').value = data.origin_cep || '';
+            document.getElementById('cfgPacEnabled').value = String(!!data.pac_enabled);
+            document.getElementById('cfgSedexEnabled').value = String(!!data.sedex_enabled);
+            document.getElementById('cfgPacCode').value = data.pac_code || '';
+            document.getElementById('cfgSedexCode').value = data.sedex_code || '';
+            document.getElementById('cfgHandlingDays').value = data.handling_days ?? 1;
+            document.getElementById('cfgFreeMin').value = data.free_shipping_min ?? '';
+        }
+
+        async function salvarConfigAdmin(e) {
+            e.preventDefault();
+            const useCorreios = document.getElementById('cfgUseCorreios').value === 'true';
+            const cep = document.getElementById('cfgOriginCep').value.replace(/\D/g, '');
+            if (useCorreios && cep.length !== 8) { alert("Para calcular pelos Correios, informe o CEP de origem com 8 números."); return; }
+            const freeMinRaw = document.getElementById('cfgFreeMin').value.replace(',', '.').trim();
+            const freeMin = freeMinRaw ? parseFloat(freeMinRaw) : null;
+            if (freeMinRaw && !(freeMin > 0)) { alert("Valor de frete grátis inválido."); return; }
+            const { error } = await supabaseClient.from('store_settings').update({
+                use_correios: useCorreios,
+                origin_cep: cep || null,
+                pac_enabled: document.getElementById('cfgPacEnabled').value === 'true',
+                sedex_enabled: document.getElementById('cfgSedexEnabled').value === 'true',
+                pac_code: document.getElementById('cfgPacCode').value.trim() || '03298',
+                sedex_code: document.getElementById('cfgSedexCode').value.trim() || '03220',
+                handling_days: parseInt(document.getElementById('cfgHandlingDays').value) || 0,
+                free_shipping_min: freeMin
+            }).eq('id', 1);
+            if (error) { console.error(error); alert("Não foi possível salvar as configurações."); return; }
+            showNotification("Configurações salvas!");
         }
 
         function populateProductDropdowns() {
@@ -750,12 +1118,13 @@
                         <i class="fas fa-grip-vertical text-gray-300 ml-1"></i>
                         <img src="${esc(p.image)}" class="w-10 h-10 object-cover rounded shadow-sm">
                         <div class="flex-grow min-w-0">
-                            <h5 class="font-bold truncate text-[11px] text-navy-900">${esc(p.name)}</h5>
+                            <h5 class="font-bold truncate text-[11px] text-navy-900">${esc(p.name)}${p.active === false ? ' <span class="ml-1 px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 text-[9px] font-bold">OCULTO</span>' : ''}</h5>
                             <span class="text-[10px] text-emerald-600 font-bold">R$ ${p.price.toFixed(2)}</span>
                             <span class="text-[9px] text-gray-400 ml-2">Estoque: ${p.stock}</span>
                             <span class="text-[9px] ${p.weight_kg ? 'text-gray-400' : 'text-red-500 font-bold'} block">${p.weight_kg ? `${Number(p.weight_kg)} kg · ${Number(p.length_cm)}×${Number(p.width_cm)}×${Number(p.height_cm)} cm` : 'Sem peso/medidas'}</span>
                         </div>
                         <div class="flex items-center gap-2 pr-2" onclick="event.stopPropagation()">
+                            <button onclick="toggleProductActive(${p.id})" class="text-gray-600 hover:bg-gray-100 p-1.5 rounded" title="${p.active === false ? 'Mostrar na loja' : 'Ocultar da loja'}"><i class="fas ${p.active === false ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
                             <button onclick="openEditProductModal(${p.id})" class="text-amber-600 hover:bg-amber-50 p-1.5 rounded"><i class="fas fa-edit"></i></button>
                             <button onclick="removeAdminProduct(${p.id})" class="text-red-500 hover:bg-red-50 p-1.5 rounded"><i class="fas fa-trash-alt"></i></button>
                         </div>
@@ -781,6 +1150,14 @@
             return { weight_kg: weight, length_cm: length, width_cm: width, height_cm: height };
         }
 
+        function readExtraImages(prefix) {
+            const lines = document.getElementById(prefix + 'ProdImages').value.split('\n').map(l => l.trim()).filter(Boolean);
+            const ok = lines.filter(u => /^https:\/\//i.test(u) || /^data:image\//i.test(u));
+            if (ok.length !== lines.length) { alert("As fotos extras precisam começar com https://"); return null; }
+            if (ok.length > 8) { alert("Use no máximo 8 fotos extras."); return null; }
+            return ok;
+        }
+
         // 4. CRUD PRODUTOS E BANNERS
         async function handleAddNewProduct(e) {
             e.preventDefault();
@@ -799,6 +1176,8 @@
 
             const shipping = readShippingFields('new');
             if (!shipping) return;
+            const extraImages = readExtraImages('new');
+            if (!extraImages) return;
 
             const newProduct = {
                 name: document.getElementById('newProdName').value.trim(),
@@ -812,6 +1191,8 @@
                 description: document.getElementById('newProdDescription').value.trim(),
                 condition: category === 'livros' ? document.getElementById('newProdCondition').value : 'novo',
                 ...shipping,
+                active: document.getElementById('newProdActive').value === 'true',
+                images: extraImages,
                 rating: 0,
                 reviews: 0
             };
@@ -842,6 +1223,8 @@
 
             const shipping = readShippingFields('edit');
             if (!shipping) return;
+            const extraImages = readExtraImages('edit');
+            if (!extraImages) return;
 
             const updatedProduct = {
                 name: document.getElementById('editProdName').value.trim(),
@@ -854,7 +1237,9 @@
                 badge: document.getElementById('editProdBadge').value.trim(),
                 description: document.getElementById('editProdDescription').value.trim(),
                 condition: category === 'livros' ? document.getElementById('editProdCondition').value : 'novo',
-                ...shipping
+                ...shipping,
+                active: document.getElementById('editProdActive').value === 'true',
+                images: extraImages
             };
 
             const { error } = await supabaseClient.from('products').update(updatedProduct).eq('id', id);
@@ -863,6 +1248,15 @@
                 showNotification("Alterações enviadas para a loja!");
                 carregarDadosDoSupabase();
             } else { console.error(error); alert("Não foi possível salvar as alterações."); }
+        }
+
+        async function toggleProductActive(id) {
+            const p = productsData.find(x => x.id === id);
+            if (!p) return;
+            const { error } = await supabaseClient.from('products').update({ active: p.active === false }).eq('id', id);
+            if (error) { alert("Não foi possível alterar o produto."); return; }
+            showNotification(p.active === false ? "Produto visível na loja!" : "Produto oculto da loja.");
+            carregarDadosDoSupabase();
         }
 
         async function removeAdminProduct(id) {
@@ -962,6 +1356,8 @@
             document.getElementById('editProdBadge').value = product.badge || '';
             document.getElementById('editProdDescription').value = product.description;
             document.getElementById('editProdCondition').value = product.condition || 'novo';
+            document.getElementById('editProdActive').value = product.active === false ? 'false' : 'true';
+            document.getElementById('editProdImages').value = (product.images || []).join('\n');
             document.getElementById('editProdWeight').value = product.weight_kg ?? '';
             document.getElementById('editProdLength').value = product.length_cm ?? '';
             document.getElementById('editProdWidth').value = product.width_cm ?? '';

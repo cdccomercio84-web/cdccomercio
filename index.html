@@ -344,11 +344,7 @@
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                 
                 <div class="md:col-span-7 flex flex-col sm:flex-row gap-3">
-                    <div class="flex sm:flex-col gap-2 order-2 sm:order-1">
-                        <div class="w-14 h-14 border-2 border-emerald-500 rounded-lg overflow-hidden cursor-pointer shadow-sm">
-                            <img id="pdThumbImg" src="" class="w-full h-full object-cover">
-                        </div>
-                    </div>
+                    <div id="pdThumbs" class="flex sm:flex-col gap-2 order-2 sm:order-1 flex-wrap"></div>
 
                     <div class="flex-1 order-1 sm:order-2 bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm aspect-square flex items-center justify-center p-2">
                         <img id="pdMainImg" src="" class="w-full h-full object-contain">
@@ -560,6 +556,7 @@
                             </button>
                         </div>
                         <span id="freightMsg" class="text-[9px] text-gray-500 block"> Digite seu CEP para calcular o frete.</span>
+                        <div id="shippingOptions" class="space-y-1"></div>
                         
                         <div id="addressFields" class="hidden space-y-2 pt-2 border-t border-gray-100">
                             <input type="text" id="ruaInput" placeholder="Rua / Avenida *" class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs focus:outline-none">
@@ -596,10 +593,23 @@
                         </div>
                     </div>
 
+                    <div class="bg-white p-2.5 rounded-lg border border-gray-200 text-xs space-y-1.5">
+                        <label class="font-semibold text-gray-700 block"><i class="fas fa-ticket-alt text-emerald-600 mr-1"></i> Cupom de desconto:</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="couponInput" maxlength="30" placeholder="Digite o cupom" class="w-2/3 border border-gray-300 rounded px-2 py-1.5 text-xs uppercase focus:outline-none">
+                            <button type="button" onclick="applyCoupon()" class="w-1/3 bg-emerald-600 text-white px-2 py-1.5 rounded text-[11px] font-bold hover:bg-emerald-700 transition">Aplicar</button>
+                        </div>
+                        <span id="couponMsg" class="text-[9px] text-gray-500 block"></span>
+                    </div>
+
                     <div class="space-y-0.5 pt-1 border-t border-gray-200">
                         <div class="flex justify-between text-xs text-gray-600">
                             <span>Subtotal:</span>
                             <span id="cartSubtotal">R$ 0,00</span>
+                        </div>
+                        <div id="cartDiscountRow" class="hidden flex justify-between text-xs text-emerald-700 font-semibold">
+                            <span>Desconto do cupom:</span>
+                            <span id="cartDiscountValue">- R$ 0,00</span>
                         </div>
                         <div class="flex justify-between text-xs text-gray-600">
                             <span>Frete:</span>
@@ -1536,6 +1546,11 @@
             }
         }
 
+        const ORDER_STATUS_PT = {
+            PENDING: 'Aguardando pagamento', PAID: 'Pago', SHIPPED: 'Enviado', DELIVERED: 'Entregue',
+            CANCELLED: 'Cancelado', REFUNDED: 'Reembolsado', FAILED: 'Não concluído'
+        };
+
         function getOrderProgressSteps(order) {
             const statusUpper = String(order.status || "").toUpperCase();
             const isPaid = ["PAID", "PAGO", "APPROVED", "SHIPPED", "DELIVERED"].includes(statusUpper);
@@ -1602,8 +1617,8 @@
                         <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2.5 text-xs">
                             <div class="flex justify-between items-center border-b pb-2">
                                 <span class="font-bold text-cdcHeader">Pedido #${esc(order.id)}</span>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${order.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-yellow-100 text-yellow-800'}">
-                                    Status: ${esc(order.status)}
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${['PAID','SHIPPED','DELIVERED'].includes(order.status) ? 'bg-emerald-100 text-emerald-800' : (['CANCELLED','REFUNDED','FAILED'].includes(order.status) ? 'bg-gray-200 text-gray-700' : 'bg-yellow-100 text-yellow-800')}">
+                                    Status: ${esc(ORDER_STATUS_PT[order.status] || order.status)}
                                 </span>
                             </div>
 
@@ -1672,7 +1687,7 @@
 
             document.getElementById('pdTitle').innerText = product.name;
             document.getElementById('pdMainImg').src = product.image;
-            document.getElementById('pdThumbImg').src = product.image;
+            renderGallery(product);
             
             const freeShippingBadge = document.getElementById('pdFreeShippingBadge');
             if (product.freeShipping) {
@@ -1795,7 +1810,23 @@
             const allItemsFreeShipping = cart.length > 0 && cart.every(item => item.freeShipping);
             const finalFreight = allItemsFreeShipping ? 0 : calculatedFreight;
 
-            const totalGeral = subtotal + finalFreight;
+            // Frete e cupom precisam ser recalculados quando o carrinho muda
+            const sig = JSON.stringify(cart.map(i => [i.id, i.quantity]));
+            if (sig !== lastCartSignature) {
+                lastCartSignature = sig;
+                clearTimeout(cartRefreshTimer);
+                cartRefreshTimer = setTimeout(() => {
+                    if (isFreightCalculated && cart.length > 0) calculateFreight();
+                    if (couponCode) refreshCoupon();
+                }, 500);
+            }
+            if (couponDiscount > subtotal) couponDiscount = subtotal;
+            const totalGeral = Math.max(subtotal - couponDiscount, 0) + finalFreight;
+            const discRow = document.getElementById('cartDiscountRow');
+            if (discRow) {
+                discRow.classList.toggle('hidden', !(couponDiscount > 0));
+                document.getElementById('cartDiscountValue').innerText = `- R$ ${couponDiscount.toFixed(2).replace('.', ',')}`;
+            }
 
             document.getElementById('cartCountBadge').innerText = totalCount;
             document.getElementById('cartHeaderTotal').innerText = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
@@ -1853,7 +1884,51 @@
             }
         }
 
-        function calculateFreight() {
+        let shippingOptions = [];
+        let selectedShipping = '';
+        let couponCode = '';
+        let couponDiscount = 0;
+        let lastCartSignature = '';
+        let cartRefreshTimer = null;
+
+        function getCartSubtotal() {
+            return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        }
+
+        function applySelectedShipping() {
+            const opt = shippingOptions.find(o => o.service === selectedShipping) || shippingOptions[0];
+            if (!opt) return;
+            selectedShipping = opt.service;
+            calculatedFreight = Number(opt.price) || 0;
+            const msg = document.getElementById('freightMsg');
+            msg.innerText = calculatedFreight === 0
+                ? '✅ Frete Grátis aplicado ao seu carrinho!'
+                : `✅ Frete: R$ ${calculatedFreight.toFixed(2).replace('.', ',')}${opt.days ? ' • entrega em até ' + opt.days + ' dia(s) úteis' : ''}`;
+            msg.className = "text-[9px] text-emerald-600 font-semibold mt-1 block";
+        }
+
+        function renderShippingOptions() {
+            const box = document.getElementById('shippingOptions');
+            if (!box) return;
+            if (shippingOptions.length < 2) { box.innerHTML = ''; return; }
+            box.innerHTML = shippingOptions.map(o => `
+                <label class="flex items-center justify-between gap-2 border ${o.service === selectedShipping ? 'border-cdcHeader bg-blue-50' : 'border-gray-200'} rounded px-2 py-1.5 cursor-pointer">
+                    <span class="flex items-center gap-1.5 text-[11px] font-semibold text-gray-700">
+                        <input type="radio" name="shipOpt" value="${esc(o.service)}" ${o.service === selectedShipping ? 'checked' : ''} onchange="selectShipping('${esc(o.service)}')">
+                        ${esc(o.label)}${o.days ? ` <span class="font-normal text-gray-500">(${Number(o.days)} dia(s) úteis)</span>` : ''}
+                    </span>
+                    <span class="text-[11px] font-black text-navy-900">R$ ${Number(o.price).toFixed(2).replace('.', ',')}</span>
+                </label>`).join('');
+        }
+
+        function selectShipping(service) {
+            selectedShipping = service;
+            applySelectedShipping();
+            renderShippingOptions();
+            updateCartUI();
+        }
+
+        async function calculateFreight() {
             const cep = document.getElementById('cepInput').value.replace(/\D/g, '');
             const msg = document.getElementById('freightMsg');
 
@@ -1863,26 +1938,100 @@
                 isFreightCalculated = false;
                 return;
             }
+            if (cart.length === 0) return;
 
-            calculatedFreight = (cep.startsWith('72') || cep.startsWith('73')) ? 12.00 : 24.50;
-            
-            const allItemsFreeShipping = cart.length > 0 && cart.every(item => item.freeShipping);
-            if (allItemsFreeShipping) {
-                msg.innerText = `✅ Frete Grátis aplicado ao seu carrinho!`;
-                calculatedFreight = 0;
-            } else {
-                msg.innerText = `✅ Frete calculado: R$ ${calculatedFreight.toFixed(2).replace('.', ',')}`;
+            msg.innerText = "Calculando frete...";
+            msg.className = "text-[9px] text-gray-500 mt-1 block";
+
+            let options = null;
+            try {
+                const res = await fetch(`${supabaseUrl}/functions/v1/calculate-freight`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'apikey': supabaseKey },
+                    body: JSON.stringify({ cep, items: cart.map(i => ({ id: i.id, quantity: i.quantity })) })
+                });
+                const data = await res.json();
+                if (data.success && Array.isArray(data.options) && data.options.length > 0) options = data.options;
+            } catch (e) {
+                console.error("Erro ao calcular frete", e);
             }
-            msg.className = "text-[9px] text-emerald-600 font-semibold mt-1 block";
-            
+            if (!options) {
+                const allFree = cart.every(item => item.freeShipping);
+                options = [{
+                    service: 'PADRAO', label: 'Entrega padrão', days: null,
+                    price: allFree ? 0 : ((cep.startsWith('72') || cep.startsWith('73')) ? 12.00 : 24.50)
+                }];
+            }
+            shippingOptions = options;
+            if (!options.some(o => o.service === selectedShipping)) selectedShipping = options[0].service;
+            applySelectedShipping();
+            renderShippingOptions();
+
             isFreightCalculated = true;
             document.getElementById('addressFields').classList.remove('hidden');
-            
-            if(document.getElementById('ruaInput').value === "") {
-               buscarCEP();
+
+            if (document.getElementById('ruaInput').value === "") {
+                buscarCEP();
             }
 
             updateCartUI();
+        }
+
+        // ===== CUPOM DE DESCONTO =====
+        function setCouponMsg(text, ok) {
+            const el = document.getElementById('couponMsg');
+            el.innerText = text;
+            el.className = `text-[9px] block ${ok ? 'text-emerald-600 font-semibold' : 'text-red-500'}`;
+        }
+
+        async function validateCoupon(code) {
+            const { data, error } = await supabaseClient.rpc('check_coupon', { p_code: code, p_subtotal: getCartSubtotal() });
+            if (error || !data) return { valid: false, message: 'Não foi possível validar o cupom agora.' };
+            return data;
+        }
+
+        async function applyCoupon() {
+            const code = document.getElementById('couponInput').value.trim();
+            if (!code) { couponCode = ''; couponDiscount = 0; setCouponMsg('', true); updateCartUI(); return; }
+            if (cart.length === 0) { setCouponMsg('Adicione produtos ao carrinho primeiro.', false); return; }
+            const r = await validateCoupon(code);
+            if (!r.valid) {
+                couponCode = ''; couponDiscount = 0;
+                setCouponMsg(r.message || 'Cupom inválido.', false);
+            } else {
+                couponCode = r.code; couponDiscount = Number(r.discount) || 0;
+                setCouponMsg(`✅ Cupom ${r.code} aplicado: - R$ ${couponDiscount.toFixed(2).replace('.', ',')}`, true);
+            }
+            updateCartUI();
+        }
+
+        async function refreshCoupon() {
+            if (!couponCode) return;
+            const r = await validateCoupon(couponCode);
+            if (!r.valid) {
+                couponCode = ''; couponDiscount = 0;
+                setCouponMsg(r.message || 'Cupom removido.', false);
+            } else {
+                couponDiscount = Number(r.discount) || 0;
+                setCouponMsg(`✅ Cupom ${r.code} aplicado: - R$ ${couponDiscount.toFixed(2).replace('.', ',')}`, true);
+            }
+            updateCartUI();
+        }
+
+        // ===== GALERIA DE FOTOS DO PRODUTO =====
+        function renderGallery(product) {
+            const imgs = [product.image, ...(Array.isArray(product.images) ? product.images : [])].filter(Boolean);
+            const main = document.getElementById('pdMainImg');
+            const box = document.getElementById('pdThumbs');
+            main.src = imgs[0] || '';
+            box.innerHTML = imgs.map((u, i) => `<div class="pd-thumb w-14 h-14 border-2 ${i === 0 ? 'border-emerald-500' : 'border-gray-200'} rounded-lg overflow-hidden cursor-pointer shadow-sm" data-i="${i}"><img src="${esc(u)}" class="w-full h-full object-cover"></div>`).join('');
+            box.querySelectorAll('.pd-thumb').forEach(el => el.addEventListener('click', () => {
+                main.src = imgs[Number(el.dataset.i)];
+                box.querySelectorAll('.pd-thumb').forEach(t => {
+                    t.classList.toggle('border-emerald-500', t === el);
+                    t.classList.toggle('border-gray-200', t !== el);
+                });
+            }));
         }
 
         function toggleCartModal(show) {
@@ -1946,7 +2095,7 @@
             const paymentMethod = document.getElementById('paymentMethodSelect').value;
             const allItemsFreeShipping = cart.length > 0 && cart.every(item => item.freeShipping);
             const finalFreight = allItemsFreeShipping ? 0 : calculatedFreight;
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + finalFreight;
+            const total = Math.max(getCartSubtotal() - couponDiscount, 0) + finalFreight;
 
             if (paymentMethod === 'whatsapp') {
                 let itemsListStr = cart.map(i => `• ${i.quantity}x ${i.name} (R$ ${(i.price * i.quantity).toFixed(2)})`).join('%0A');
@@ -1981,7 +2130,9 @@
                         items: itemsParaAsaas,
                         paymentMethod: paymentMethod,
                         cep: cep,
-                        address: enderecoCompleto
+                        address: enderecoCompleto,
+                        shippingService: selectedShipping,
+                        couponCode: couponCode
                     })
                 });
 
