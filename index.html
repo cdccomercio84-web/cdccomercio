@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CDC Comércio Online - Mais produtos. Mais praticidade.</title>
+    <meta name="description" content="CDC Comércio Online: limpeza, bijuterias, informática, peças para veículos, bebidas e livros com entrega para todo o Brasil pelos Correios.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://cdccomercio.com.br/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="CDC Comércio Online">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:title" content="CDC Comércio Online - Mais produtos. Mais praticidade.">
+    <meta property="og:description" content="Limpeza, bijuterias, informática, peças para veículos, bebidas e livros com entrega para todo o Brasil.">
+    <meta property="og:url" content="https://cdccomercio.com.br/">
+    <meta name="twitter:card" content="summary_large_image">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"Store","name":"CDC Comércio Online","url":"https://cdccomercio.com.br/","telephone":"+55 61 99582-9201","email":"cdccomercio84@gmail.com","areaServed":"BR"}</script>
 
     <link rel="icon" type="image/jpeg" href="imagem comercio online.jpeg">
     
@@ -360,7 +371,7 @@
                         <span id="pdConditionBadge" class="hidden"></span>
                         
                         <div class="text-[11px] text-gray-500 space-y-0.5 mt-1">
-                            <p>Disponibilidade: <span class="font-medium text-gray-700">Imediata</span></p>
+                            <p>Disponibilidade: <span id="pdAvailability" class="font-medium text-gray-700">Imediata</span></p>
                         </div>
                     </div>
 
@@ -390,6 +401,11 @@
                         </div>
                     </div>
 
+                    <div id="pdVariantBox" class="hidden pt-3">
+                        <p class="text-[11px] font-bold text-navy-900 mb-1.5"><span id="pdVariantLabel">Opção</span>: <span id="pdVariantChosen" class="font-medium text-gray-600"></span></p>
+                        <div id="pdVariantOptions" class="flex flex-wrap gap-1.5"></div>
+                    </div>
+
                     <div class="flex items-center gap-3 pt-3">
                         <div class="flex items-center border border-gray-300 rounded-xl overflow-hidden bg-white">
                             <button onclick="changePdQty(-1)" class="px-2.5 py-2 text-gray-600 hover:bg-gray-100 font-bold text-xs transition">
@@ -403,9 +419,18 @@
                             </button>
                         </div>
 
-                        <button onclick="buyNowFromPage()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-wider py-3 px-4 rounded-xl transition shadow-lg flex items-center justify-center gap-2 active:scale-95">
+                        <button id="pdBuyBtn" onclick="buyNowFromPage()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-wider py-3 px-4 rounded-xl transition shadow-lg flex items-center justify-center gap-2 active:scale-95">
                             ADICIONAR AO CARRINHO
                         </button>
+                    </div>
+
+                    <div id="pdFreightBox" class="pt-3">
+                        <p class="text-[11px] font-bold text-navy-900 mb-1.5"><i class="fas fa-truck text-gray-400 mr-1"></i> Calcule o frete e o prazo</p>
+                        <div class="flex gap-2">
+                            <input type="text" id="pdCepInput" inputmode="numeric" maxlength="9" placeholder="Digite seu CEP" class="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-xs" onkeydown="if(event.key==='Enter'){event.preventDefault();calcProductFreight();}">
+                            <button type="button" onclick="calcProductFreight()" class="bg-cdcHeader hover:bg-cdcDark text-white text-[11px] font-bold px-3 py-2 rounded-xl transition">Calcular</button>
+                        </div>
+                        <div id="pdFreightResult" class="mt-2 text-[11px] text-gray-600 space-y-1"></div>
                     </div>
 
                     <div class="pt-4 border-t border-gray-200 mt-4">
@@ -492,6 +517,8 @@
                         <li><a href="javascript:void(0)" onclick="openInfoPage('envio')" class="info-link hover:text-navy-900 block py-1" data-info="envio">Envio e Entrega</a></li>
                         <li><a href="javascript:void(0)" onclick="openInfoPage('politica-troca')" class="info-link hover:text-navy-900 block py-1" data-info="politica-troca">Política de trocas e devolução</a></li>
                         <li><a href="javascript:void(0)" onclick="openInfoPage('missao-visao-valores')" class="info-link hover:text-navy-900 block py-1" data-info="missao-visao-valores">Missão, visão e valores</a></li>
+                        <li><a href="javascript:void(0)" onclick="openInfoPage('politica-privacidade')" class="info-link hover:text-navy-900 block py-1" data-info="politica-privacidade">Política de Privacidade (LGPD)</a></li>
+                        <li><a href="javascript:void(0)" onclick="openInfoPage('termos-de-uso')" class="info-link hover:text-navy-900 block py-1" data-info="termos-de-uso">Termos de Uso</a></li>
                     </ul>
                 </div>
 
@@ -791,12 +818,14 @@
                         <li><a href="javascript:void(0)" onclick="openInfoPage('envio')" class="hover:text-amber-300">Envio e Entrega</a></li>
                         <li><a href="javascript:void(0)" onclick="openInfoPage('politica-troca')" class="hover:text-amber-300">Política de trocas e devolução</a></li>
                         <li><a href="javascript:void(0)" onclick="openInfoPage('missao-visao-valores')" class="hover:text-amber-300">Missão, visão e valores</a></li>
+                        <li><a href="javascript:void(0)" onclick="openInfoPage('politica-privacidade')" class="hover:text-amber-300">Política de Privacidade (LGPD)</a></li>
+                        <li><a href="javascript:void(0)" onclick="openInfoPage('termos-de-uso')" class="hover:text-amber-300">Termos de Uso</a></li>
                     </ul>
                 </div>
 
                 <div class="space-y-2">
                     <h4 class="font-extrabold text-xs text-[#5294E2] uppercase tracking-wider">CATEGORIAS</h4>
-                    <ul class="space-y-1.5 text-gray-200 text-[11px]">
+                    <ul id="footerCategories" class="space-y-1.5 text-gray-200 text-[11px]">
                         <li><a href="#catalogo" onclick="filterCategory('limpeza'); closeAllPages();" class="hover:text-blue-300">Limpeza</a></li>
                         <li><a href="#catalogo" onclick="filterCategory('bijuterias'); closeAllPages();" class="hover:text-blue-300">Bijuterias</a></li>
                         <li><a href="#catalogo" onclick="filterCategory('informatica'); closeAllPages();" class="hover:text-blue-300">Informática</a></li>
@@ -1006,10 +1035,270 @@
                         <p>Ética, transparência, qualidade, confiança e respeito, com foco no cliente, inovação, agilidade, segurança e crescimento sustentável.</p>
                     </div>
                 </div>
+            `,
+            'politica-privacidade': `
+                <h1 class="text-xl font-black text-navy-900 mb-1">Política de Privacidade</h1>
+                <p class="text-[11px] text-gray-500 mb-3">Em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018 — LGPD). Última atualização: novembro de 2026.</p>
+
+                <div class="space-y-4 text-xs sm:text-sm">
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">1. Quem somos</h2>
+                        <p>A CDC Comércio Online (“CDC”, “nós”) é a loja virtual responsável por este site (cdccomercio.com.br) e atua como <strong>controladora</strong> dos dados pessoais tratados nas compras e no atendimento realizados por aqui.</p>
+                    </div>
+
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">2. Quais dados coletamos</h2>
+                        <ul class="list-disc pl-4 space-y-1">
+                            <li><strong>Dados de cadastro e compra:</strong> nome completo, CPF/CNPJ, e-mail, telefone e endereço de entrega (incluindo CEP).</li>
+                            <li><strong>Dados do pedido:</strong> produtos comprados, valores, frete, cupom utilizado, forma de pagamento, status e código de rastreio.</li>
+                            <li><strong>Dados de pagamento:</strong> são processados diretamente pelo Asaas, nosso provedor de pagamentos. <strong>Não armazenamos número de cartão de crédito nem senha bancária.</strong></li>
+                            <li><strong>Avaliações:</strong> nome (ou apelido), nota e comentário que você decidir publicar em um produto.</li>
+                            <li><strong>Dados de navegação:</strong> itens do carrinho, guardados apenas no seu próprio navegador (armazenamento local), e registros técnicos básicos de acesso gerados pela hospedagem e pelos serviços que usamos.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">3. Para que usamos seus dados</h2>
+                        <ul class="list-disc pl-4 space-y-1">
+                            <li>Processar e entregar seu pedido, emitir cobrança e confirmar pagamento <em>(execução de contrato)</em>.</li>
+                            <li>Calcular frete e prazo de entrega e gerar o código de rastreio <em>(execução de contrato)</em>.</li>
+                            <li>Enviar e-mails sobre o andamento do pedido: pedido recebido, pagamento confirmado e pedido enviado <em>(execução de contrato)</em>.</li>
+                            <li>Atender dúvidas, trocas, devoluções e reclamações <em>(execução de contrato e exercício regular de direitos)</em>.</li>
+                            <li>Cumprir obrigações legais, fiscais e contábeis <em>(obrigação legal)</em>.</li>
+                            <li>Prevenir fraudes e proteger a segurança da loja <em>(legítimo interesse)</em>.</li>
+                        </ul>
+                        <p class="mt-1">Não vendemos seus dados e não os usamos para enviar propaganda sem o seu consentimento.</p>
+                    </div>
+
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">4. Com quem compartilhamos</h2>
+                        <p>Compartilhamos apenas o necessário para a compra acontecer:</p>
+                        <ul class="list-disc pl-4 space-y-1 mt-1">
+                            <li><strong>Asaas</strong> — processamento de pagamentos (PIX, boleto e cartão).</li>
+                            <li><strong>Correios</strong> e/ou entregadores — transporte e entrega (nome, endereço e telefone).</li>
+                            <li><strong>Supabase</strong> — hospedagem do banco de dados e da infraestrutura do site.</li>
+                            <li><strong>Serviço de envio de e-mails</strong> — para as mensagens de acompanhamento do pedido.</li>
+                            <li><strong>ViaCEP</strong> — consulta pública de endereço a partir do CEP.</li>
+                            <li><strong>Autoridades</strong> — quando houver obrigação legal ou ordem judicial.</li>
+                        </ul>
+                        <p class="mt-1">Alguns desses prestadores podem armazenar dados em servidores fora do Brasil, sempre com medidas de segurança adequadas, conforme a LGPD.</p>
+                    </div>
+
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">5. Por quanto tempo guardamos</h2>
+                        <p>Mantemos os dados pelo tempo necessário para concluir a compra e atender a garantias, direito de arrependimento e obrigações fiscais e contábeis (em regra, até 5 anos após a compra). Depois disso, os dados são eliminados ou anonimizados, salvo se a lei exigir prazo maior.</p>
+                    </div>
+
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">6. Seus direitos</h2>
+                        <p>Nos termos do art. 18 da LGPD, você pode solicitar, a qualquer momento: confirmação de que tratamos seus dados; acesso; correção de dados incompletos ou desatualizados; anonimização, bloqueio ou eliminação de dados desnecessários; portabilidade; informação sobre compartilhamentos; e revogação de consentimento, quando for a base legal. Algumas solicitações podem ser limitadas quando precisarmos guardar dados para cumprir obrigação legal.</p>
+                    </div>
+
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">7. Segurança</h2>
+                        <p>Adotamos medidas técnicas e administrativas para proteger seus dados, como conexão segura (HTTPS), controle de acesso restrito ao painel administrativo e registro de alterações. Nenhum sistema é totalmente imune a incidentes; se ocorrer algum que possa causar risco relevante, comunicaremos você e a Autoridade Nacional de Proteção de Dados (ANPD) conforme a lei.</p>
+                    </div>
+
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">8. Cookies e armazenamento local</h2>
+                        <p>Usamos o armazenamento do seu navegador para lembrar o conteúdo do carrinho. Não usamos cookies de publicidade. Você pode limpar esses dados a qualquer momento nas configurações do navegador.</p>
+                    </div>
+
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">9. Crianças e adolescentes</h2>
+                        <p>Nossa loja é destinada a maiores de 18 anos. Compras por menores devem ser feitas com acompanhamento de pais ou responsáveis.</p>
+                    </div>
+
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">10. Fale com a gente (Encarregado de dados)</h2>
+                        <p>Para exercer seus direitos ou tirar dúvidas sobre esta política, entre em contato pelo e-mail <a href="mailto:cdccomercio84@gmail.com" class="text-blue-700 underline">cdccomercio84@gmail.com</a> ou pelo WhatsApp <a href="https://wa.me/5561995829201" target="_blank" rel="noopener" class="text-blue-700 underline">(61) 99582-9201</a>.</p>
+                    </div>
+
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">11. Alterações desta política</h2>
+                        <p>Podemos atualizar esta política para refletir mudanças na lei ou no funcionamento da loja. A versão vigente estará sempre publicada nesta página, com a data da última atualização.</p>
+                    </div>
+                </div>
+            `,
+            'termos-de-uso': `
+                <h1 class="text-xl font-black text-navy-900 mb-1">Termos de Uso</h1>
+                <p class="text-[11px] text-gray-500 mb-3">Última atualização: novembro de 2026.</p>
+
+                <div class="space-y-4 text-xs sm:text-sm">
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">1. Aceitação</h2>
+                        <p>Ao navegar e comprar na CDC Comércio Online, você declara ter lido e concordado com estes Termos, com a Política de Privacidade, a Política de Trocas e Devolução e as informações de Envio e Entrega publicadas neste site.</p>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">2. Cadastro e responsabilidade pelas informações</h2>
+                        <p>Para comprar, você deve informar dados verdadeiros, completos e atualizados (nome, CPF/CNPJ, e-mail, telefone e endereço). Você é responsável por conferir o endereço de entrega; dados incorretos podem causar atraso, devolução do pacote ou cobrança de novo frete.</p>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">3. Produtos, preços e estoque</h2>
+                        <p>As imagens e descrições são ilustrativas e buscam representar os produtos com fidelidade. Os preços e a disponibilidade podem mudar sem aviso prévio; vale o valor exibido no fechamento do pedido. Em caso de erro evidente de preço ou de indisponibilidade de estoque, podemos cancelar o pedido, com reembolso integral de qualquer valor já pago.</p>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">4. Pagamento</h2>
+                        <p>Aceitamos as formas de pagamento disponíveis no fechamento do pedido (como PIX, boleto e cartão), processadas pelo Asaas. O pedido só é separado e enviado após a confirmação do pagamento. Cupons de desconto seguem as condições exibidas e podem ter validade, valor mínimo e limite de uso.</p>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">5. Frete e prazo de entrega</h2>
+                        <p>O frete é calculado conforme o CEP de destino e as medidas e o peso dos produtos. Os prazos informados contam a partir da confirmação do pagamento e da postagem, e dependem das transportadoras. Mais detalhes na página Envio e Entrega.</p>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">6. Trocas, devoluções e arrependimento</h2>
+                        <p>Aplicam-se o Código de Defesa do Consumidor e as regras da página Política de trocas e devolução, incluindo o direito de arrependimento de 7 dias para compras feitas fora do estabelecimento comercial.</p>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">7. Avaliações e conteúdo enviado por você</h2>
+                        <p>Ao publicar uma avaliação, você declara que ela reflete sua experiência real e não contém ofensas, dados pessoais de terceiros, conteúdo ilegal ou propaganda. Podemos remover avaliações que descumpram estas regras.</p>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">8. Propriedade intelectual</h2>
+                        <p>Marcas, logotipos, textos, imagens e o layout do site pertencem à CDC Comércio Online ou a seus parceiros e não podem ser copiados ou usados sem autorização.</p>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">9. Uso adequado</h2>
+                        <p>É proibido tentar acessar áreas restritas, burlar sistemas de segurança, usar o site para fraudes ou sobrecarregá-lo de forma abusiva.</p>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">10. Alterações e foro</h2>
+                        <p>Podemos atualizar estes Termos a qualquer momento; a versão vigente é a publicada nesta página. Fica eleito o foro do domicílio do consumidor para resolver eventuais conflitos, conforme o Código de Defesa do Consumidor.</p>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-navy-900 text-sm mb-1">11. Contato</h2>
+                        <p>Dúvidas? Fale conosco pelo e-mail <a href="mailto:cdccomercio84@gmail.com" class="text-blue-700 underline">cdccomercio84@gmail.com</a> ou pelo WhatsApp <a href="https://wa.me/5561995829201" target="_blank" rel="noopener" class="text-blue-700 underline">(61) 99582-9201</a>.</p>
+                    </div>
+                </div>
             `
         };
 
+        // ==========================================
+        // ESTOQUE / VARIAÇÕES / CATEGORIAS / SEO
+        // ==========================================
+        function hasVariants(p) { return !!p && Array.isArray(p.variants) && p.variants.length > 0; }
+        function stockOf(p, variant) {
+            if (!p) return 0;
+            if (hasVariants(p)) {
+                const v = p.variants.find(x => x.name === variant);
+                return v ? Math.max(Number(v.stock) || 0, 0) : 0;
+            }
+            return Math.max(Number(p.stock) || 0, 0);
+        }
+        function isSoldOut(p) {
+            if (hasVariants(p)) return p.variants.every(v => !(Number(v.stock) > 0));
+            return !(Number(p.stock) > 0);
+        }
+
+        let categoriesData = [];
+        const FALLBACK_CATEGORY_NAMES = { limpeza: 'Limpeza', bijuterias: 'Bijuterias', informatica: 'Informática', 'pecas-veiculos': 'Peças para Veículos', bebidas: 'Bebidas', livros: 'Livros' };
+        function categoryName(slug) {
+            const c = categoriesData.find(x => x.slug === slug);
+            return c ? c.name : (FALLBACK_CATEGORY_NAMES[slug] || slug);
+        }
+
+        async function loadCategories() {
+            try {
+                const { data, error } = await supabaseClient.from('categories').select('*').eq('active', true).order('position', { ascending: true }).order('name', { ascending: true });
+                if (error || !data || data.length === 0) return;
+                categoriesData = data;
+                const iconOk = (v) => /^fa-[a-z0-9-]+$/.test(v || '') ? v : 'fa-tag';
+                const colorOk = (v) => /^text-[a-z0-9-]+$/.test(v || '') ? v : 'text-blue-300';
+                const nav = document.querySelector('nav .cat-btn[data-cat="todos"]')?.parentElement;
+                if (nav) {
+                    nav.querySelectorAll('.cat-btn:not([data-cat="todos"])').forEach(b => b.remove());
+                    data.forEach(c => {
+                        const b = document.createElement('button');
+                        b.className = 'cat-btn px-3 py-1.5 rounded-full hover:bg-cdcHeader hover:text-white transition whitespace-nowrap flex items-center gap-1.5 border border-blue-900 text-[11px]';
+                        b.dataset.cat = c.slug;
+                        b.onclick = () => { filterCategory(c.slug); closeAllPages(); };
+                        b.innerHTML = `<i class="fas ${iconOk(c.icon)} ${colorOk(c.color)}"></i> ${esc(c.name)}`;
+                        nav.appendChild(b);
+                    });
+                }
+                const footer = document.getElementById('footerCategories');
+                if (footer) {
+                    footer.innerHTML = data.map(c => `<li><a href="#catalogo" data-cat="${esc(c.slug)}" class="hover:text-blue-300">${esc(c.name)}</a></li>`).join('');
+                    footer.querySelectorAll('a').forEach(a => a.onclick = () => { filterCategory(a.dataset.cat); closeAllPages(); });
+                }
+            } catch (e) { console.error('categorias:', e); }
+        }
+
+        // Mantém o carrinho (salvo no navegador) em dia com o catálogo atual
+        function syncCartWithCatalog() {
+            if (cart.length === 0) return;
+            const notes = [];
+            const next = [];
+            cart.forEach(item => {
+                const p = productsData.find(x => x.id === item.id);
+                if (!p) { notes.push(`"${item.name}" saiu do catálogo e foi removido do carrinho.`); return; }
+                const variant = item.variant || '';
+                if (hasVariants(p) && !p.variants.some(v => v.name === variant)) { notes.push(`"${p.name}" mudou de opções e foi removido do carrinho.`); return; }
+                const avail = stockOf(p, variant);
+                if (avail <= 0) { notes.push(`"${p.name}"${variant ? ' (' + variant + ')' : ''} está esgotado e foi removido do carrinho.`); return; }
+                let qty = item.quantity;
+                if (qty > avail) { qty = avail; notes.push(`Ajustamos a quantidade de "${p.name}" para ${avail} (estoque disponível).`); }
+                if (Number(item.price) !== Number(p.price)) notes.push(`O preço de "${p.name}" foi atualizado para R$ ${Number(p.price).toFixed(2).replace('.', ',')}.`);
+                next.push({ ...p, variant, quantity: qty, name: p.name });
+            });
+            cart = next;
+            updateCartUI();
+            if (notes.length) setTimeout(() => alert('Atualizamos seu carrinho:\n\n• ' + notes.join('\n• ')), 300);
+        }
+
+        // SEO dinâmico (título, descrição, Open Graph, dados estruturados)
+        const SITE_URL = 'https://cdccomercio.com.br/';
+        const DEFAULT_TITLE = 'CDC Comércio Online - Mais produtos. Mais praticidade.';
+        const DEFAULT_DESC = 'CDC Comércio Online: limpeza, bijuterias, informática, peças para veículos, bebidas e livros com entrega para todo o Brasil pelos Correios.';
+        function setMeta(sel, attr, val) { const el = document.querySelector(sel); if (el) el.setAttribute(attr, val); }
+        function setSeo({ title, description, url, image, product } = {}) {
+            const t = title || DEFAULT_TITLE, d = (description || DEFAULT_DESC).replace(/\s+/g, ' ').trim().slice(0, 160), u = url || SITE_URL;
+            document.title = t;
+            setMeta('meta[name="description"]', 'content', d);
+            setMeta('link[rel="canonical"]', 'href', u);
+            setMeta('meta[property="og:title"]', 'content', t);
+            setMeta('meta[property="og:description"]', 'content', d);
+            setMeta('meta[property="og:url"]', 'content', u);
+            let og = document.querySelector('meta[property="og:image"]');
+            const img = image && /^https?:\/\//.test(image) ? image : '';
+            if (img) {
+                if (!og) { og = document.createElement('meta'); og.setAttribute('property', 'og:image'); document.head.appendChild(og); }
+                og.setAttribute('content', img);
+            } else if (og) og.remove();
+            let ld = document.getElementById('ldProduct');
+            if (product) {
+                if (!ld) { ld = document.createElement('script'); ld.type = 'application/ld+json'; ld.id = 'ldProduct'; document.head.appendChild(ld); }
+                const data = {
+                    '@context': 'https://schema.org', '@type': 'Product', name: product.name,
+                    description: d, sku: String(product.id), category: categoryName(product.category),
+                    offers: { '@type': 'Offer', url: u, priceCurrency: 'BRL', price: Number(product.price).toFixed(2),
+                        availability: isSoldOut(product) ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
+                        itemCondition: product.condition === 'usado' ? 'https://schema.org/UsedCondition' : 'https://schema.org/NewCondition' }
+                };
+                if (img) data.image = [img];
+                if (product.reviews > 0) data.aggregateRating = { '@type': 'AggregateRating', ratingValue: String(product.rating), reviewCount: String(product.reviews) };
+                ld.textContent = JSON.stringify(data);
+            } else if (ld) ld.remove();
+        }
+        function productUrl(id) { return SITE_URL + '?produto=' + id; }
+
+        // Abre a página certa conforme o endereço (?produto=ID, #produto-ID legado, #info-...)
+        function routeFromLocation() {
+            const q = new URLSearchParams(location.search);
+            let pid = parseInt(q.get('produto'), 10);
+            const h = location.hash || '';
+            if (!pid && /^#produto-\d+$/.test(h)) pid = parseInt(h.slice(9), 10);
+            if (pid && productsData.some(p => p.id === pid)) {
+                history.replaceState({ productId: pid }, '', '?produto=' + pid);
+                displayProductView(pid);
+            } else if (/^#info-[a-z-]+$/.test(h) && infoPagesData[h.slice(6)]) {
+                history.replaceState({ infoKey: h.slice(6) }, '', h);
+                displayInfoView(h.slice(6));
+            }
+        }
+
         let cart = JSON.parse(localStorage.getItem('cdc_cart')) || [];
+        let selectedVariant = '';
         
         let currentCategory = 'todos';
         let searchQuery = '';
@@ -1028,6 +1317,7 @@
         let isStorefrontOrderManual = false;
 
         async function carregarDadosDoSupabase() {
+            await loadCategories();
             const { data: prods, error: errProds } = await supabaseClient
                 .from('products')
                 .select('*')
@@ -1040,6 +1330,8 @@
                 }
                 populateProductDropdowns();
                 applyFiltersAndSearch();
+                syncCartWithCatalog();
+                if (!window.__routed) { window.__routed = true; routeFromLocation(); }
             } else {
                 console.error("Erro produtos:", errProds);
             }
@@ -1273,7 +1565,7 @@
             const filterName = document.getElementById('activeFilterName');
             if (currentCategory !== 'todos' || searchQuery !== '') {
                 filterBadge.classList.remove('hidden');
-                filterName.innerHTML = `${currentCategory !== 'todos' ? 'Categoria: ' + esc(currentCategory) : ''} ${searchQuery ? 'Busca: "' + esc(searchQuery) + '"' : ''} <button onclick="resetFilters()"><i class="fas fa-times"></i></button>`;
+                filterName.innerHTML = `${currentCategory !== 'todos' ? 'Categoria: ' + esc(categoryName(currentCategory)) : ''} ${searchQuery ? 'Busca: "' + esc(searchQuery) + '"' : ''} <button onclick="resetFilters()"><i class="fas fa-times"></i></button>`;
             } else {
                 filterBadge.classList.add('hidden');
             }
@@ -1316,7 +1608,8 @@
             grid.innerHTML = items.map(p => `
                 <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
                     <div class="relative overflow-hidden bg-gray-50 aspect-square cursor-pointer" onclick="navigateToProduct(${p.id})">
-                        <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <img src="${esc(p.image)}" alt="${esc(p.name)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isSoldOut(p) ? 'opacity-50 grayscale' : ''}">
+                        ${isSoldOut(p) ? `<span class="absolute inset-x-0 top-1/2 -translate-y-1/2 mx-auto w-max bg-red-600 text-white text-[11px] font-black px-3 py-1 rounded shadow uppercase tracking-wider">Esgotado</span>` : ''}
                         ${p.badge ? `<span class="absolute top-1.5 left-1.5 bg-cdcHeader text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">${p.badge}</span>` : ''}
                         ${p.freeShipping ? `<span class="absolute top-1.5 right-1.5 bg-emerald-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow uppercase">Frete Grátis</span>` : ''}
                         ${discountPercent(p) > 0 ? `<span class="absolute bottom-1.5 left-1.5 bg-orange-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded shadow">-${discountPercent(p)}% OFF</span>` : ''}
@@ -1339,8 +1632,8 @@
                                 <span class="text-sm sm:text-base font-black text-navy-900">R$ ${p.price.toFixed(2).replace('.', ',')}</span>
                                 ${oldPriceHTML(p, 'text-[10px]')}
                             </div>
-                            <p class="text-[9px] text-emerald-600 font-medium flex items-center">
-                                Estoque (${p.stock} un.)
+                            <p class="text-[9px] ${isSoldOut(p) ? 'text-red-600 font-bold' : 'text-emerald-600 font-medium'} flex items-center">
+                                ${isSoldOut(p) ? 'Esgotado' : `Estoque (${p.stock} un.)`}
                                 ${p.category === 'livros' ? `<span class="ml-1 text-[9px] font-bold ${p.condition === 'usado' ? 'text-amber-600' : 'text-blue-600'}"> • ${p.condition === 'usado' ? 'Usado' : 'Novo'}</span>` : ''}
                             </p>
                             
@@ -1460,7 +1753,7 @@
         }
 
         function navigateToProduct(productId) {
-            history.pushState({ productId: productId }, '', '#produto-' + productId);
+            history.pushState({ productId: productId }, '', '?produto=' + productId);
             displayProductView(productId);
         }
 
@@ -1678,11 +1971,12 @@
 
             selectedProductForPage = product;
             activePageQuantity = 1;
+            selectedVariant = '';
 
             document.getElementById('pdBreadcrumb').innerHTML = `
                 <a href="javascript:void(0)" onclick="closeAllPages()" class="hover:underline">Início</a> 
                 <span>&gt;</span> 
-                <span class="capitalize font-medium">${product.category}</span> 
+                <span class="font-medium">${esc(categoryName(product.category))}</span> 
             `;
 
             document.getElementById('pdTitle').innerText = product.name;
@@ -1724,6 +2018,16 @@
             }
             document.getElementById('pdDescription').innerText = product.description;
             document.getElementById('pdQtyValue').innerText = activePageQuantity;
+            renderVariantPicker(product);
+            refreshPdAvailability();
+            document.getElementById('pdFreightResult').innerHTML = '';
+            setSeo({
+                title: `${product.name} | CDC Comércio Online`,
+                description: product.description || DEFAULT_DESC,
+                url: productUrl(product.id),
+                image: product.image,
+                product
+            });
 
             document.getElementById('pdStarRating').innerHTML = renderStarsHTML(product.rating);
             document.getElementById('pdReviewsCount').innerText = product.reviews > 0 ? `(${product.reviews} avaliações)` : "(Sem avaliações)";
@@ -1739,6 +2043,8 @@
         function displayInfoView(infoKey) {
             const container = document.getElementById('infoContentContainer');
             if (infoPagesData[infoKey]) container.innerHTML = infoPagesData[infoKey];
+            const infoTitles = { 'politica-privacidade': 'Política de Privacidade (LGPD)', 'termos-de-uso': 'Termos de Uso', 'politica-troca': 'Política de trocas e devolução', 'envio': 'Envio e Entrega', 'missao-visao-valores': 'Missão, visão e valores' };
+            setSeo({ title: `${infoTitles[infoKey] || 'Informações'} | CDC Comércio Online`, url: SITE_URL + '#info-' + infoKey });
             
             document.querySelectorAll('.info-link').forEach(link => {
                 if (link.dataset.info === infoKey) {
@@ -1761,43 +2067,131 @@
         }
 
         function closeAllPages() {
-            if (location.hash) history.pushState(null, '', location.pathname);
+            if (location.hash || location.search) history.pushState(null, '', location.pathname);
             displayStorefrontView();
             applyFiltersAndSearch(); 
         }
 
         function displayStorefrontView() {
+            setSeo();
             hideAllViews();
             document.getElementById('mainStorefrontView').classList.remove('hidden');
             window.scrollTo(0, 0);
         }
 
+        function pdMaxQty() {
+            const p = selectedProductForPage;
+            if (!p) return 1;
+            if (hasVariants(p) && !selectedVariant) return 99;
+            return Math.max(stockOf(p, selectedVariant), 1);
+        }
+
         function changePdQty(delta) {
             activePageQuantity += delta;
             if (activePageQuantity < 1) activePageQuantity = 1;
+            if (activePageQuantity > pdMaxQty()) {
+                activePageQuantity = pdMaxQty();
+                showNotification(`Só temos ${activePageQuantity} un. em estoque.`);
+            }
             document.getElementById('pdQtyValue').innerText = activePageQuantity;
         }
 
+        function renderVariantPicker(p) {
+            const box = document.getElementById('pdVariantBox');
+            if (!hasVariants(p)) { box.classList.add('hidden'); return; }
+            box.classList.remove('hidden');
+            document.getElementById('pdVariantLabel').innerText = p.variant_label || 'Opção';
+            document.getElementById('pdVariantChosen').innerText = selectedVariant;
+            const wrap = document.getElementById('pdVariantOptions');
+            wrap.innerHTML = '';
+            p.variants.forEach(v => {
+                const out = !(Number(v.stock) > 0);
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.disabled = out;
+                b.className = 'px-3 py-1.5 rounded-lg border text-[11px] font-bold transition ' +
+                    (out ? 'border-gray-200 text-gray-300 line-through cursor-not-allowed' :
+                     v.name === selectedVariant ? 'border-cdcHeader bg-cdcHeader text-white' : 'border-gray-300 text-gray-700 hover:border-cdcHeader');
+                b.innerText = v.name;
+                b.title = out ? 'Esgotado' : '';
+                b.onclick = () => { selectedVariant = v.name; activePageQuantity = Math.min(activePageQuantity, pdMaxQty()); document.getElementById('pdQtyValue').innerText = activePageQuantity; renderVariantPicker(p); refreshPdAvailability(); };
+                wrap.appendChild(b);
+            });
+        }
+
+        function refreshPdAvailability() {
+            const p = selectedProductForPage;
+            if (!p) return;
+            const el = document.getElementById('pdAvailability');
+            const btn = document.getElementById('pdBuyBtn');
+            const sold = isSoldOut(p);
+            const avail = hasVariants(p) ? (selectedVariant ? stockOf(p, selectedVariant) : null) : stockOf(p);
+            if (sold) { el.innerText = 'Esgotado'; el.className = 'font-bold text-red-600'; }
+            else if (avail !== null && avail <= 5) { el.innerText = `Últimas ${avail} unidades`; el.className = 'font-bold text-amber-600'; }
+            else { el.innerText = 'Imediata'; el.className = 'font-medium text-gray-700'; }
+            btn.disabled = sold;
+            btn.classList.toggle('opacity-50', sold);
+            btn.classList.toggle('cursor-not-allowed', sold);
+            btn.innerText = sold ? 'PRODUTO ESGOTADO' : 'ADICIONAR AO CARRINHO';
+        }
+
+        async function calcProductFreight() {
+            const p = selectedProductForPage;
+            const out = document.getElementById('pdFreightResult');
+            if (!p) return;
+            const cep = document.getElementById('pdCepInput').value.replace(/\D/g, '');
+            if (cep.length !== 8) { out.innerHTML = '<span class="text-red-600">Informe um CEP válido (8 números).</span>'; return; }
+            out.innerHTML = 'Calculando...';
+            try {
+                const r = await fetch(`${supabaseUrl}/functions/v1/calculate-freight`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'apikey': supabaseKey },
+                    body: JSON.stringify({ cep, items: [{ id: p.id, quantity: activePageQuantity }] })
+                });
+                const d = await r.json();
+                if (!d.success) { out.innerHTML = `<span class="text-red-600">${esc(d.error || 'Não foi possível calcular agora.')}</span>`; return; }
+                out.innerHTML = d.options.map(o => `<div class="flex justify-between bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5"><span>${esc(o.label)}${o.days ? ` · até ${esc(o.days)} dia(s) úteis` : ''}</span><b class="text-navy-900">${Number(o.price) === 0 ? 'Grátis' : 'R$ ' + Number(o.price).toFixed(2).replace('.', ',')}</b></div>`).join('');
+            } catch (e) {
+                out.innerHTML = '<span class="text-red-600">Erro de conexão. Tente novamente.</span>';
+            }
+        }
+
         function buyNowFromPage() {
-            if (!selectedProductForPage) return;
-            const existing = cart.find(item => item.id === selectedProductForPage.id);
+            const p = selectedProductForPage;
+            if (!p) return;
+            if (isSoldOut(p)) { showNotification('Produto esgotado.'); return; }
+            let variant = '';
+            if (hasVariants(p)) {
+                if (!selectedVariant) { showNotification(`Escolha ${p.variant_label ? 'o(a) ' + p.variant_label.toLowerCase() : 'uma opção'} antes de adicionar.`); return; }
+                variant = selectedVariant;
+            }
+            const avail = stockOf(p, variant);
+            const existing = cart.find(item => item.id === p.id && (item.variant || '') === variant);
+            const inCart = existing ? existing.quantity : 0;
+            if (inCart + activePageQuantity > avail) {
+                showNotification(`Só temos ${avail} un. em estoque${inCart ? ` (você já tem ${inCart} no carrinho)` : ''}.`);
+                return;
+            }
             if (existing) existing.quantity += activePageQuantity;
-            else cart.push({ ...selectedProductForPage, quantity: activePageQuantity });
+            else cart.push({ ...p, variant, quantity: activePageQuantity });
 
             updateCartUI();
             showNotification(`Adicionado ao carrinho!`);
         }
 
-        function updateCartQuantity(productId, delta) {
-            const item = cart.find(i => i.id === productId);
+        function updateCartQuantity(idx, delta) {
+            const item = cart[idx];
             if (!item) return;
+            const p = productsData.find(x => x.id === item.id);
+            const avail = p ? stockOf(p, item.variant || '') : item.quantity;
+            if (delta > 0 && item.quantity + delta > avail) { showNotification(`Só temos ${avail} un. em estoque.`); return; }
             item.quantity += delta;
-            if (item.quantity <= 0) cart = cart.filter(i => i.id !== productId);
+            if (item.quantity <= 0) cart.splice(idx, 1);
             updateCartUI();
         }
 
-        function removeFromCart(productId) {
-            cart = cart.filter(i => i.id !== productId);
+        function removeFromCart(idx) {
+            cart.splice(idx, 1);
             updateCartUI();
         }
 
@@ -1811,7 +2205,7 @@
             const finalFreight = allItemsFreeShipping ? 0 : calculatedFreight;
 
             // Frete e cupom precisam ser recalculados quando o carrinho muda
-            const sig = JSON.stringify(cart.map(i => [i.id, i.quantity]));
+            const sig = JSON.stringify(cart.map(i => [i.id, i.variant || '', i.quantity]));
             if (sig !== lastCartSignature) {
                 lastCartSignature = sig;
                 clearTimeout(cartRefreshTimer);
@@ -1838,19 +2232,20 @@
             if (cart.length === 0) {
                 cartList.innerHTML = `<div class="py-8 text-center text-gray-400 text-xs"><p>Seu carrinho está vazio</p></div>`;
             } else {
-                cartList.innerHTML = cart.map(item => `
+                cartList.innerHTML = cart.map((item, idx) => `
                     <div class="flex items-center gap-2.5 p-2 bg-gray-50 rounded-xl border border-gray-200">
-                        <img src="${item.image}" class="w-10 h-10 object-cover rounded-lg">
+                        <img src="${esc(item.image)}" class="w-10 h-10 object-cover rounded-lg">
                         <div class="flex-grow">
-                            <h5 class="text-xs font-bold text-navy-900 line-clamp-1">${item.name}</h5>
+                            <h5 class="text-xs font-bold text-navy-900 line-clamp-1">${esc(item.name)}</h5>
+                            ${item.variant ? `<span class="block text-[10px] text-gray-500">${esc(item.variant)}</span>` : ''}
                             <span class="text-[11px] text-cdcHeader font-semibold">R$ ${item.price.toFixed(2).replace('.', ',')}</span>
                         </div>
                         <div class="flex items-center gap-1.5">
-                            <button onclick="updateCartQuantity(${item.id}, -1)" class="w-4 h-4 bg-gray-200 rounded text-xs font-bold">-</button>
+                            <button onclick="updateCartQuantity(${idx}, -1)" class="w-4 h-4 bg-gray-200 rounded text-xs font-bold">-</button>
                             <span class="text-xs font-bold">${item.quantity}</span>
-                            <button onclick="updateCartQuantity(${item.id}, 1)" class="w-4 h-4 bg-gray-200 rounded text-xs font-bold">+</button>
+                            <button onclick="updateCartQuantity(${idx}, 1)" class="w-4 h-4 bg-gray-200 rounded text-xs font-bold">+</button>
                         </div>
-                        <button onclick="removeFromCart(${item.id})" class="text-red-500 p-1 text-xs">
+                        <button onclick="removeFromCart(${idx})" class="text-red-500 p-1 text-xs">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
@@ -2098,7 +2493,7 @@
             const total = Math.max(getCartSubtotal() - couponDiscount, 0) + finalFreight;
 
             if (paymentMethod === 'whatsapp') {
-                let itemsListStr = cart.map(i => `• ${i.quantity}x ${i.name} (R$ ${(i.price * i.quantity).toFixed(2)})`).join('%0A');
+                let itemsListStr = cart.map(i => `• ${i.quantity}x ${i.name}${i.variant ? ' - ' + i.variant : ''} (R$ ${(i.price * i.quantity).toFixed(2)})`).join('%0A');
                 const message = `Olá CDC Comércio Online! Gostaria de finalizar meu pedido:%0A%0A${itemsListStr}%0A%0A*Endereço de Entrega:*%0A${enderecoCompleto}%0A%0A*Pagamento:* WHATSAPP%0A*Frete:* R$ ${finalFreight.toFixed(2)}%0A*Total:* R$ ${total.toFixed(2)}`;
                 window.open(`https://wa.me/5561995829201?text=${message}`, '_blank');
                 return;
@@ -2117,7 +2512,7 @@
             showNotification("Comunicando com o Asaas...");
 
             try {
-                const itemsParaAsaas = cart.map(i => ({ id: i.id, quantity: i.quantity }));
+                const itemsParaAsaas = cart.map(i => ({ id: i.id, quantity: i.quantity, variant: i.variant || '' }));
 
                 const response = await fetch(`${supabaseUrl}/functions/v1/create-asaas-charge`, {
                     method: 'POST',

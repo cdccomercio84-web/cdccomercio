@@ -129,6 +129,15 @@
                     <button onclick="switchAdminTab('config')" id="tabBtnConfig" class="admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 text-gray-700 hover:bg-gray-100">
                         <i class="fas fa-cog text-sm"></i> Configurações de Frete
                     </button>
+                    <button onclick="switchAdminTab('categorias')" id="tabBtnCategorias" class="admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-tags text-sm"></i> Categorias
+                    </button>
+                    <button onclick="switchAdminTab('admins')" id="tabBtnAdmins" class="admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-user-shield text-sm"></i> Administradores
+                    </button>
+                    <button onclick="switchAdminTab('historico')" id="tabBtnHistorico" class="admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-history text-sm"></i> Histórico de Alterações
+                    </button>
                 </div>
 
                 <!-- CONTEÚDO PRINCIPAL (DIREITA) -->
@@ -305,7 +314,23 @@
                                     <div class="sm:col-span-2">
                                         <label class="block text-[11px] font-semibold text-gray-700 mb-1">Fotos extras (uma URL por linha, até 8)</label>
                                         <textarea id="newProdImages" rows="2" placeholder="https://..." class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none resize-none"></textarea>
+                                        <label class="mt-1 inline-flex items-center gap-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-2.5 py-1 rounded-lg cursor-pointer text-[10px] font-bold"><i class="fas fa-upload"></i> Enviar fotos do computador/celular<input type="file" class="hidden" accept="image/*" multiple onchange="handleExtraImagesUpload(event, 'new')"></label>
                                     </div>
+                                </div>
+
+                                <div class="p-3 bg-amber-50/60 border border-amber-200 rounded-xl space-y-2">
+                                    <div class="text-[11px] font-bold text-amber-900"><i class="fas fa-palette mr-1"></i> Variações (tamanho, cor...) — opcional</div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                        <div>
+                                            <label class="block text-[10px] font-semibold text-gray-700 mb-1">Nome da variação</label>
+                                            <input type="text" id="newProdVariantLabel" maxlength="30" placeholder="Tamanho, Cor..." class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none">
+                                        </div>
+                                        <div class="sm:col-span-2">
+                                            <label class="block text-[10px] font-semibold text-gray-700 mb-1">Opções (uma por linha: nome;estoque)</label>
+                                            <textarea id="newProdVariants" rows="3" placeholder="P;5&#10;M;8&#10;G;3" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none resize-none"></textarea>
+                                        </div>
+                                    </div>
+                                    <p class="text-[9px] text-amber-800/80">Se preencher as opções, o estoque total do produto passa a ser a soma delas (o campo "Estoque" é ignorado). Deixe vazio para produto sem variação.</p>
                                 </div>
 
                                 <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl space-y-2">
@@ -449,6 +474,55 @@
                     </div>
 
                     <!-- SEÇÃO: CONFIGURAÇÕES DE FRETE -->
+                    <!-- SEÇÃO: CATEGORIAS -->
+                    <div id="adminSectionCategorias" class="space-y-6 hidden">
+                        <div class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm space-y-4">
+                            <h3 class="text-sm font-black text-navy-900 flex items-center gap-2 border-b pb-2"><i class="fas fa-tags text-blue-600"></i> Categorias da Loja</h3>
+                            <form onsubmit="handleAddCategory(event)" class="grid grid-cols-2 sm:grid-cols-5 gap-2 items-end">
+                                <div class="col-span-2">
+                                    <label class="block text-[10px] font-semibold text-gray-700 mb-1">Nome da categoria</label>
+                                    <input type="text" id="newCatName" required maxlength="40" placeholder="Ex: Pet Shop" class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-gray-700 mb-1">Ícone</label>
+                                    <select id="newCatIcon" class="w-full px-2 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-gray-700 mb-1">Cor do ícone</label>
+                                    <select id="newCatColor" class="w-full px-2 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none"></select>
+                                </div>
+                                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2 rounded-lg">Adicionar</button>
+                            </form>
+                            <div id="adminCategoriesList" class="space-y-2"></div>
+                            <p class="text-[10px] text-gray-500">As categorias aparecem no menu e no rodapé da loja, na ordem abaixo. Só é possível excluir uma categoria sem produtos; se houver produtos, use "Ocultar".</p>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO: ADMINISTRADORES -->
+                    <div id="adminSectionAdmins" class="space-y-6 hidden">
+                        <div class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm space-y-4">
+                            <h3 class="text-sm font-black text-navy-900 flex items-center gap-2 border-b pb-2"><i class="fas fa-user-shield text-blue-600"></i> Quem pode acessar este painel</h3>
+                            <form onsubmit="handleAddAdmin(event)" class="flex gap-2">
+                                <input type="email" id="newAdminEmail" required placeholder="e-mail do novo administrador" class="flex-grow px-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg outline-none">
+                                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 rounded-lg">Autorizar</button>
+                            </form>
+                            <div id="adminAdminsList" class="space-y-2"></div>
+                            <p class="text-[10px] text-gray-500">Para a pessoa entrar, ela também precisa ter uma conta de login com este mesmo e-mail (criada no Supabase → Authentication → Users, com e-mail confirmado). Aqui você só define quem tem permissão. Você não pode remover o seu próprio acesso.</p>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO: HISTÓRICO -->
+                    <div id="adminSectionHistorico" class="space-y-6 hidden">
+                        <div class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm space-y-4">
+                            <div class="flex items-center justify-between border-b pb-2">
+                                <h3 class="text-sm font-black text-navy-900 flex items-center gap-2"><i class="fas fa-history text-blue-600"></i> Histórico de Alterações</h3>
+                                <button onclick="carregarHistoricoAdmin()" class="text-xs text-blue-600 font-bold hover:underline"><i class="fas fa-sync-alt mr-1"></i> Atualizar</button>
+                            </div>
+                            <div id="adminAuditList" class="space-y-2 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar"></div>
+                            <p class="text-[10px] text-gray-500">Mostra as últimas 200 alterações em produtos, banners, cupons, categorias, frete, pedidos e administradores, com quem fez e quando.</p>
+                        </div>
+                    </div>
+
                     <div id="adminSectionConfig" class="space-y-6 hidden">
                         <div class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm space-y-4">
                             <h3 class="text-sm font-black text-navy-900 border-b pb-2 flex items-center gap-2"><i class="fas fa-cog text-blue-600"></i> Configurações de Frete</h3>
@@ -538,10 +612,26 @@
                         <div class="sm:col-span-2">
                             <label class="block text-[11px] font-semibold text-gray-700 mb-1">Fotos extras (uma URL por linha, até 8)</label>
                             <textarea id="editProdImages" rows="2" placeholder="https://..." class="w-full px-3 py-2 text-xs border rounded-lg bg-gray-50 outline-none resize-none"></textarea>
+                            <label class="mt-1 inline-flex items-center gap-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-2.5 py-1 rounded-lg cursor-pointer text-[10px] font-bold"><i class="fas fa-upload"></i> Enviar fotos do computador/celular<input type="file" class="hidden" accept="image/*" multiple onchange="handleExtraImagesUpload(event, 'edit')"></label>
                         </div>
                     </div>
 
-                        <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl space-y-2">
+                        <div class="p-3 bg-amber-50/60 border border-amber-200 rounded-xl space-y-2">
+                                    <div class="text-[11px] font-bold text-amber-900"><i class="fas fa-palette mr-1"></i> Variações (tamanho, cor...) — opcional</div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                        <div>
+                                            <label class="block text-[10px] font-semibold text-gray-700 mb-1">Nome da variação</label>
+                                            <input type="text" id="editProdVariantLabel" maxlength="30" placeholder="Tamanho, Cor..." class="w-full px-3 py-2 text-xs border rounded-lg bg-gray-50 outline-none">
+                                        </div>
+                                        <div class="sm:col-span-2">
+                                            <label class="block text-[10px] font-semibold text-gray-700 mb-1">Opções (uma por linha: nome;estoque)</label>
+                                            <textarea id="editProdVariants" rows="3" placeholder="P;5&#10;M;8&#10;G;3" class="w-full px-3 py-2 text-xs border rounded-lg bg-gray-50 outline-none resize-none"></textarea>
+                                        </div>
+                                    </div>
+                                    <p class="text-[9px] text-amber-800/80">Se preencher as opções, o estoque total do produto passa a ser a soma delas (o campo "Estoque" é ignorado). Deixe vazio para produto sem variação.</p>
+                                </div>
+
+                                <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl space-y-2">
                             <div class="text-[11px] font-bold text-blue-900"><i class="fas fa-box mr-1"></i> Dados da embalagem para o frete (Correios)</div>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                 <div>
@@ -678,7 +768,7 @@
         });
 
         // TROCAR ABAS DO PAINEL LATERAL
-        const ADMIN_TABS = ['resumo', 'banners', 'produtos', 'pedidos', 'avaliacoes', 'cupons', 'config'];
+        const ADMIN_TABS = ['resumo', 'banners', 'produtos', 'pedidos', 'avaliacoes', 'cupons', 'config', 'categorias', 'admins', 'historico'];
         const TAB_CLS_ON = "admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 bg-cdcHeader text-white";
         const TAB_CLS_OFF = "admin-tab-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 text-gray-700 hover:bg-gray-100";
         const tabId = t => t.charAt(0).toUpperCase() + t.slice(1);
@@ -695,9 +785,13 @@
             else if (tabName === 'avaliacoes') carregarComentariosAdmin();
             else if (tabName === 'cupons') carregarCuponsAdmin();
             else if (tabName === 'config') carregarConfigAdmin();
+            else if (tabName === 'categorias') carregarCategoriasAdmin();
+            else if (tabName === 'admins') carregarAdminsAdmin();
+            else if (tabName === 'historico') carregarHistoricoAdmin();
         }
 
         // 1. SISTEMA DE LOGIN INTEGRADO AO SUPABASE
+        let currentAdminEmail = '';
         async function handleAdminLogin(e) {
             e.preventDefault();
             const email = document.getElementById('adminUser').value.trim();
@@ -717,6 +811,7 @@
             document.getElementById('adminDashboardView').classList.remove('hidden');
             document.getElementById('logoutBtn').classList.remove('hidden');
             document.getElementById('logoutBtn').classList.add('flex');
+            currentAdminEmail = email.toLowerCase();
             showNotification("Acesso Liberado!");
             await carregarDadosDoSupabase();
             renderAdminLists();
@@ -737,6 +832,7 @@
 
         // 2. FUNÇÕES DE DADOS (SUPABASE)
         async function carregarDadosDoSupabase() {
+            await carregarCategoriasBase();
             const { data: prods } = await supabaseClient.from('products').select('*').order('id', { ascending: false });
             if (prods) {
                 productsData = prods;
@@ -850,6 +946,7 @@
                                 <input type="text" id="trackingInput_${oid}" value="${esc(order.tracking_code || '')}" placeholder="Código de Rastreio (Ex: AB123456789BR)"
                                        class="px-3 py-1.5 text-xs bg-white border border-gray-300 rounded-lg flex-grow sm:w-64 outline-none focus:border-blue-500">
                                 <button onclick="salvarRastreio(${oid})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">Salvar Rastreio</button>
+                                <button onclick="printOrder(${oid})" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap" title="Imprimir pedido e etiqueta"><i class="fas fa-print"></i></button>
                             </div>
                         </div>
                     </div>
@@ -883,6 +980,10 @@
 
             if (!error) {
                 showNotification(patch.status ? "Rastreio salvo e pedido marcado como Enviado!" : "Código de rastreio salvo com sucesso!");
+                if (trackingCode && patch.status && confirm('Enviar e-mail avisando o cliente que o pedido foi enviado?')) {
+                    const ok = await enviarEmailPedido(orderId, 'shipped');
+                    showNotification(ok ? 'E-mail enviado ao cliente!' : 'Não foi possível enviar o e-mail (serviço de e-mail ainda não configurado ou cliente sem e-mail).');
+                }
                 carregarPedidosAdmin();
             } else {
                 alert("Erro ao salvar o código de rastreio.");
@@ -1120,7 +1221,7 @@
                         <div class="flex-grow min-w-0">
                             <h5 class="font-bold truncate text-[11px] text-navy-900">${esc(p.name)}${p.active === false ? ' <span class="ml-1 px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 text-[9px] font-bold">OCULTO</span>' : ''}</h5>
                             <span class="text-[10px] text-emerald-600 font-bold">R$ ${p.price.toFixed(2)}</span>
-                            <span class="text-[9px] text-gray-400 ml-2">Estoque: ${p.stock}</span>
+                            <span class="text-[9px] ${Number(p.stock) <= 0 ? 'text-red-500 font-bold' : 'text-gray-400'} ml-2">${Number(p.stock) <= 0 ? 'ESGOTADO' : 'Estoque: ' + p.stock}${Array.isArray(p.variants) && p.variants.length ? ' · ' + p.variants.length + ' variações' : ''}</span>
                             <span class="text-[9px] ${p.weight_kg ? 'text-gray-400' : 'text-red-500 font-bold'} block">${p.weight_kg ? `${Number(p.weight_kg)} kg · ${Number(p.length_cm)}×${Number(p.width_cm)}×${Number(p.height_cm)} cm` : 'Sem peso/medidas'}</span>
                         </div>
                         <div class="flex items-center gap-2 pr-2" onclick="event.stopPropagation()">
@@ -1178,6 +1279,8 @@
             if (!shipping) return;
             const extraImages = readExtraImages('new');
             if (!extraImages) return;
+            const variantData = readVariants('new');
+            if (!variantData) return;
 
             const newProduct = {
                 name: document.getElementById('newProdName').value.trim(),
@@ -1193,6 +1296,7 @@
                 ...shipping,
                 active: document.getElementById('newProdActive').value === 'true',
                 images: extraImages,
+                ...variantData,
                 rating: 0,
                 reviews: 0
             };
@@ -1201,6 +1305,7 @@
             if (!error) {
                 showNotification(`Produto cadastrado no site!`);
                 e.target.reset();
+                toggleConditionField('new');
                 carregarDadosDoSupabase();
             } else { console.error(error); alert("Erro ao salvar. Confira os campos de peso e medidas."); }
         }
@@ -1225,6 +1330,8 @@
             if (!shipping) return;
             const extraImages = readExtraImages('edit');
             if (!extraImages) return;
+            const variantData = readVariants('edit');
+            if (!variantData) return;
 
             const updatedProduct = {
                 name: document.getElementById('editProdName').value.trim(),
@@ -1239,7 +1346,8 @@
                 condition: category === 'livros' ? document.getElementById('editProdCondition').value : 'novo',
                 ...shipping,
                 active: document.getElementById('editProdActive').value === 'true',
-                images: extraImages
+                images: extraImages,
+                ...variantData
             };
 
             const { error } = await supabaseClient.from('products').update(updatedProduct).eq('id', id);
@@ -1358,6 +1466,8 @@
             document.getElementById('editProdCondition').value = product.condition || 'novo';
             document.getElementById('editProdActive').value = product.active === false ? 'false' : 'true';
             document.getElementById('editProdImages').value = (product.images || []).join('\n');
+            document.getElementById('editProdVariantLabel').value = product.variant_label || '';
+            document.getElementById('editProdVariants').value = (product.variants || []).map(v => `${v.name};${Number(v.stock) || 0}`).join('\n');
             document.getElementById('editProdWeight').value = product.weight_kg ?? '';
             document.getElementById('editProdLength').value = product.length_cm ?? '';
             document.getElementById('editProdWidth').value = product.width_cm ?? '';
@@ -1386,16 +1496,249 @@
 
         function closeEditBannerModal() { document.getElementById('editBannerModal').classList.add('hidden'); }
 
-        function handleImageUpload(event, inputId) {
+        // Fotos vão para o Supabase Storage (bucket público "product-images"); o banco guarda só o link.
+        async function resizeImageToBlob(file, maxDim, quality) {
+            const bmp = await createImageBitmap(file);
+            const scale = Math.min(1, maxDim / Math.max(bmp.width, bmp.height));
+            const w = Math.max(1, Math.round(bmp.width * scale)), h = Math.max(1, Math.round(bmp.height * scale));
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(bmp, 0, 0, w, h);
+            return await new Promise(res => canvas.toBlob(res, 'image/webp', quality));
+        }
+
+        async function uploadImageToStorage(file) {
+            if (!file || !file.type.startsWith('image/')) throw new Error('Arquivo não é uma imagem.');
+            let blob = await resizeImageToBlob(file, 1200, 0.85);
+            if (blob && blob.size > 1.9 * 1024 * 1024) blob = await resizeImageToBlob(file, 900, 0.7);
+            if (!blob) throw new Error('Não foi possível processar a imagem.');
+            if (blob.size > 2 * 1024 * 1024) throw new Error('Imagem muito grande (máx. 2 MB após compactar).');
+            const ext = blob.type === 'image/webp' ? 'webp' : 'png';
+            const path = `p/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+            const { error } = await supabaseClient.storage.from('product-images').upload(path, blob, { contentType: blob.type, cacheControl: '31536000', upsert: false });
+            if (error) throw error;
+            return supabaseClient.storage.from('product-images').getPublicUrl(path).data.publicUrl;
+        }
+
+        async function handleImageUpload(event, inputId) {
             const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    document.getElementById(inputId).value = e.target.result;
-                    showNotification("Imagem carregada!");
-                };
-                reader.readAsDataURL(file);
+            if (!file) return;
+            showNotification('Enviando imagem...');
+            try {
+                document.getElementById(inputId).value = await uploadImageToStorage(file);
+                showNotification('Imagem enviada!');
+            } catch (e) { console.error(e); alert('Não foi possível enviar a imagem: ' + (e.message || e)); }
+            event.target.value = '';
+        }
+
+        async function handleExtraImagesUpload(event, prefix) {
+            const files = [...event.target.files];
+            if (!files.length) return;
+            const ta = document.getElementById(prefix + 'ProdImages');
+            const current = ta.value.split('\n').map(l => l.trim()).filter(Boolean);
+            if (current.length + files.length > 8) { alert('Use no máximo 8 fotos extras.'); event.target.value = ''; return; }
+            showNotification('Enviando fotos...');
+            try {
+                for (const f of files) current.push(await uploadImageToStorage(f));
+                ta.value = current.join('\n');
+                showNotification('Fotos enviadas!');
+            } catch (e) { console.error(e); alert('Não foi possível enviar as fotos: ' + (e.message || e)); }
+            event.target.value = '';
+        }
+
+        // ===== Variações =====
+        function readVariants(prefix) {
+            const label = document.getElementById(prefix + 'ProdVariantLabel').value.trim();
+            const lines = document.getElementById(prefix + 'ProdVariants').value.split('\n').map(l => l.trim()).filter(Boolean);
+            if (lines.length === 0) return { variant_label: null, variants: [] };
+            if (lines.length > 30) { alert('Use no máximo 30 variações.'); return null; }
+            const seen = new Set(), out = [];
+            for (const l of lines) {
+                const m = l.match(/^(.+?)\s*[;:]\s*(\d+)$/);
+                if (!m) { alert(`Linha inválida: "${l}". Use o formato nome;estoque (ex.: M;5).`); return null; }
+                const name = m[1].trim().slice(0, 60);
+                if (seen.has(name.toLowerCase())) { alert(`A variação "${name}" está repetida.`); return null; }
+                seen.add(name.toLowerCase());
+                out.push({ name, stock: parseInt(m[2], 10) });
             }
+            return { variant_label: label || 'Opção', variants: out };
+        }
+
+        // ===== Categorias =====
+        let categoriesAdmin = [];
+        const CAT_ICONS = { 'fa-tag': 'Etiqueta', 'fa-soap': 'Sabão', 'fa-gem': 'Joia', 'fa-laptop': 'Notebook', 'fa-car': 'Carro', 'fa-wine-bottle': 'Garrafa', 'fa-book': 'Livro', 'fa-paw': 'Pet', 'fa-tshirt': 'Roupa', 'fa-utensils': 'Cozinha', 'fa-couch': 'Casa', 'fa-gamepad': 'Games', 'fa-mobile-alt': 'Celular', 'fa-dumbbell': 'Esporte', 'fa-baby': 'Bebê', 'fa-tools': 'Ferramentas', 'fa-spa': 'Beleza', 'fa-gift': 'Presente' };
+        const CAT_COLORS = { 'text-blue-300': 'Azul', 'text-pink-300': 'Rosa', 'text-amber-300': 'Âmbar', 'text-orange-400': 'Laranja', 'text-purple-300': 'Roxo', 'text-red-300': 'Vermelho', 'text-emerald-400': 'Verde', 'text-cyan-300': 'Ciano', 'text-yellow-300': 'Amarelo' };
+
+        function slugify(t) {
+            return String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+        }
+        function catName(slug) { const c = categoriesAdmin.find(x => x.slug === slug); return c ? c.name : slug; }
+
+        async function carregarCategoriasBase() {
+            const { data } = await supabaseClient.from('categories').select('*').order('position', { ascending: true }).order('name', { ascending: true });
+            if (data && data.length) { categoriesAdmin = data; fillCategorySelects(); }
+        }
+
+        function fillCategorySelects() {
+            const opts = categoriesAdmin.filter(c => c.active).map(c => `<option value="${esc(c.slug)}">${esc(c.name)}</option>`).join('');
+            const fill = (id, html) => { const el = document.getElementById(id); if (!el) return; const v = el.value; el.innerHTML = html; if ([...el.options].some(o => o.value === v)) el.value = v; };
+            ['newProdCategory', 'editProdCategory'].forEach(id => fill(id, categoriesAdmin.map(c => `<option value="${esc(c.slug)}">${esc(c.name)}${c.active ? '' : ' (oculta)'}</option>`).join('')));
+            fill('adminCategoryFilter', `<option value="todos">Todas</option>` + categoriesAdmin.map(c => `<option value="${esc(c.slug)}">${esc(c.name)}</option>`).join(''));
+            fill('newBannerCategory', `<option value="todos">Todos os Produtos</option>` + opts);
+            fill('editBannerCategory', `<option value="todos">Todos</option>` + opts);
+            const ic = document.getElementById('newCatIcon');
+            if (ic && !ic.options.length) ic.innerHTML = Object.entries(CAT_ICONS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+            const co = document.getElementById('newCatColor');
+            if (co && !co.options.length) co.innerHTML = Object.entries(CAT_COLORS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+        }
+
+        async function carregarCategoriasAdmin() {
+            await carregarCategoriasBase();
+            const box = document.getElementById('adminCategoriesList');
+            box.innerHTML = categoriesAdmin.map((c, i) => {
+                const used = productsData.filter(p => p.category === c.slug).length;
+                return `<div class="flex items-center gap-2 p-2 bg-gray-50 border rounded-lg text-xs">
+                    <span class="w-7 h-7 rounded-full bg-[#081836] flex items-center justify-center"><i class="fas ${esc(c.icon)} ${esc(c.color)}"></i></span>
+                    <div class="flex-grow min-w-0"><b class="text-navy-900">${esc(c.name)}</b>${c.active ? '' : ' <span class="px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 text-[9px] font-bold">OCULTA</span>'}<span class="block text-[10px] text-gray-400">${esc(c.slug)} · ${used} produto(s)</span></div>
+                    <button onclick="moveCategory('${esc(c.slug)}', -1)" class="p-1.5 text-gray-500 hover:bg-gray-100 rounded" ${i === 0 ? 'disabled' : ''} title="Subir"><i class="fas fa-arrow-up"></i></button>
+                    <button onclick="moveCategory('${esc(c.slug)}', 1)" class="p-1.5 text-gray-500 hover:bg-gray-100 rounded" ${i === categoriesAdmin.length - 1 ? 'disabled' : ''} title="Descer"><i class="fas fa-arrow-down"></i></button>
+                    <button onclick="renameCategory('${esc(c.slug)}')" class="p-1.5 text-amber-600 hover:bg-amber-50 rounded" title="Renomear"><i class="fas fa-edit"></i></button>
+                    <button onclick="toggleCategory('${esc(c.slug)}')" class="p-1.5 text-gray-600 hover:bg-gray-100 rounded" title="${c.active ? 'Ocultar' : 'Mostrar'}"><i class="fas ${c.active ? 'fa-eye-slash' : 'fa-eye'}"></i></button>
+                    <button onclick="deleteCategory('${esc(c.slug)}')" class="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Excluir"><i class="fas fa-trash-alt"></i></button>
+                </div>`;
+            }).join('') || '<p class="text-xs text-gray-400 text-center py-4">Nenhuma categoria.</p>';
+        }
+
+        async function handleAddCategory(e) {
+            e.preventDefault();
+            const name = document.getElementById('newCatName').value.trim();
+            const slug = slugify(name);
+            if (slug.length < 2) { alert('Nome inválido.'); return; }
+            if (categoriesAdmin.some(c => c.slug === slug)) { alert('Já existe uma categoria com esse nome.'); return; }
+            const position = (categoriesAdmin.reduce((m, c) => Math.max(m, c.position), 0)) + 1;
+            const { error } = await supabaseClient.from('categories').insert([{ slug, name, icon: document.getElementById('newCatIcon').value, color: document.getElementById('newCatColor').value, position }]);
+            if (error) { console.error(error); alert('Não foi possível criar a categoria.'); return; }
+            e.target.reset(); showNotification('Categoria criada!'); carregarCategoriasAdmin();
+        }
+
+        async function moveCategory(slug, dir) {
+            const i = categoriesAdmin.findIndex(c => c.slug === slug), j = i + dir;
+            if (i < 0 || j < 0 || j >= categoriesAdmin.length) return;
+            const arr = [...categoriesAdmin]; [arr[i], arr[j]] = [arr[j], arr[i]];
+            const results = await Promise.all(arr.map((c, idx) => supabaseClient.from('categories').update({ position: idx + 1 }).eq('slug', c.slug)));
+            if (results.some(r => r.error)) alert('Não foi possível reordenar.');
+            carregarCategoriasAdmin();
+        }
+
+        async function renameCategory(slug) {
+            const c = categoriesAdmin.find(x => x.slug === slug); if (!c) return;
+            const name = prompt('Novo nome da categoria:', c.name);
+            if (!name || !name.trim() || name.trim() === c.name) return;
+            const { error } = await supabaseClient.from('categories').update({ name: name.trim().slice(0, 40) }).eq('slug', slug);
+            if (error) alert('Não foi possível renomear.'); else showNotification('Categoria renomeada!');
+            carregarCategoriasAdmin();
+        }
+
+        async function toggleCategory(slug) {
+            const c = categoriesAdmin.find(x => x.slug === slug); if (!c) return;
+            const { error } = await supabaseClient.from('categories').update({ active: !c.active }).eq('slug', slug);
+            if (error) alert('Não foi possível alterar.');
+            carregarCategoriasAdmin();
+        }
+
+        async function deleteCategory(slug) {
+            const used = productsData.filter(p => p.category === slug).length;
+            if (used > 0) { alert(`Esta categoria tem ${used} produto(s). Mova-os para outra categoria ou use "Ocultar".`); return; }
+            if (!confirm(`Excluir a categoria "${catName(slug)}"?`)) return;
+            const { error } = await supabaseClient.from('categories').delete().eq('slug', slug);
+            if (error) alert('Não foi possível excluir.'); else showNotification('Categoria excluída.');
+            carregarCategoriasAdmin();
+        }
+
+        // ===== Administradores =====
+        async function carregarAdminsAdmin() {
+            const box = document.getElementById('adminAdminsList');
+            const { data, error } = await supabaseClient.from('admins').select('email').order('email');
+            if (error) { box.innerHTML = '<p class="text-xs text-red-500">Não foi possível carregar.</p>'; return; }
+            const me = (currentAdminEmail || '').toLowerCase();
+            box.innerHTML = data.map(a => `<div class="flex items-center justify-between p-2 bg-gray-50 border rounded-lg text-xs">
+                <span><i class="fas fa-user-shield text-blue-600 mr-2"></i>${esc(a.email)}${a.email === me ? ' <span class="ml-1 px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[9px] font-bold">VOCÊ</span>' : ''}</span>
+                ${a.email === me ? '' : `<button onclick="removeAdminAccess('${esc(a.email)}')" class="text-red-500 hover:bg-red-50 p-1.5 rounded" title="Remover acesso"><i class="fas fa-user-minus"></i></button>`}
+            </div>`).join('');
+        }
+
+        async function handleAddAdmin(e) {
+            e.preventDefault();
+            const email = document.getElementById('newAdminEmail').value.trim().toLowerCase();
+            if (!confirm(`Dar acesso total ao painel para ${email}?`)) return;
+            const { error } = await supabaseClient.from('admins').insert([{ email }]);
+            if (error) { console.error(error); alert(error.code === '23505' ? 'Esse e-mail já é administrador.' : 'Não foi possível autorizar.'); return; }
+            e.target.reset(); showNotification('Administrador autorizado!'); carregarAdminsAdmin();
+        }
+
+        async function removeAdminAccess(email) {
+            if (!confirm(`Remover o acesso de ${email}?`)) return;
+            const { error } = await supabaseClient.from('admins').delete().eq('email', email);
+            if (error) alert('Não foi possível remover.'); else showNotification('Acesso removido.');
+            carregarAdminsAdmin();
+        }
+
+        // ===== Histórico =====
+        const AUDIT_TABLES = { products: 'Produto', banners: 'Banner', coupons: 'Cupom', store_settings: 'Config. de frete', orders: 'Pedido', categories: 'Categoria', admins: 'Administrador' };
+        function summarizeChanges(action, ch) {
+            if (!ch || typeof ch !== 'object') return '';
+            const short = v => { const t = typeof v === 'object' ? JSON.stringify(v) : String(v ?? '∅'); return t.length > 60 ? t.slice(0, 57) + '…' : t; };
+            if (action === 'alterou') return Object.entries(ch).map(([k, v]) => `${k}: ${short(v.de)} → ${short(v.para)}`).join(' · ');
+            const name = ch.name || ch.code || ch.email || ch.slug || '';
+            return name ? String(name) : '';
+        }
+        async function carregarHistoricoAdmin() {
+            const box = document.getElementById('adminAuditList');
+            box.innerHTML = '<p class="text-xs text-gray-500 text-center py-4"><i class="fas fa-spinner fa-spin"></i> Carregando...</p>';
+            const { data, error } = await supabaseClient.from('audit_log').select('*').order('id', { ascending: false }).limit(200);
+            if (error) { box.innerHTML = '<p class="text-xs text-red-500 text-center py-4">Não foi possível carregar o histórico.</p>'; return; }
+            if (!data.length) { box.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Nenhuma alteração registrada ainda.</p>'; return; }
+            const color = { criou: 'bg-emerald-100 text-emerald-800', alterou: 'bg-blue-100 text-blue-800', apagou: 'bg-red-100 text-red-800' };
+            box.innerHTML = data.map(r => `<div class="p-2.5 bg-gray-50 border rounded-lg text-[11px] space-y-0.5">
+                <div class="flex flex-wrap items-center gap-2"><span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${color[r.action] || 'bg-gray-200'}">${esc(r.action)}</span>
+                <b class="text-navy-900">${esc(AUDIT_TABLES[r.table_name] || r.table_name)}${r.row_id ? ' #' + esc(r.row_id) : ''}</b>
+                <span class="text-gray-400">${new Date(r.at).toLocaleString('pt-BR')} · ${esc(r.actor_email || '')}</span></div>
+                <div class="text-gray-600 break-words">${esc(summarizeChanges(r.action, r.changes))}</div></div>`).join('');
+        }
+
+        // ===== E-mail "pedido enviado" e impressão =====
+        async function enviarEmailPedido(orderId, event) {
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) return false;
+                const r = await fetch(`${supabaseUrl}/functions/v1/notify-order`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', apikey: supabaseKey, Authorization: `Bearer ${session.access_token}` },
+                    body: JSON.stringify({ orderId, event })
+                });
+                const d = await r.json();
+                return d && d.success && !d.skipped;
+            } catch (e) { console.error(e); return false; }
+        }
+
+        function printOrder(orderId) {
+            const o = adminOrdersCache.find(x => Number(x.id) === orderId);
+            if (!o) return;
+            const c = o.customers || {};
+            const items = (Array.isArray(o.items) ? o.items : []).map(i => `<tr><td>${Number(i.quantity) || 1}x</td><td>${esc(i.name)}</td><td style="text-align:right">${brl(i.price)}</td></tr>`).join('');
+            const w = window.open('', '_blank');
+            if (!w) { alert('Libere pop-ups para imprimir.'); return; }
+            w.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Pedido #${Number(o.id)}</title>
+            <style>body{font-family:Arial,sans-serif;margin:24px;color:#111}h1{font-size:18px;margin:0 0 4px}table{width:100%;border-collapse:collapse;font-size:13px}td{padding:4px 0;border-bottom:1px solid #ddd}.box{border:2px dashed #000;padding:14px;margin-top:22px;font-size:15px}.small{font-size:12px;color:#555}</style></head><body>
+            <h1>CDC Comércio Online — Pedido #${Number(o.id)}</h1>
+            <p class="small">${new Date(o.created_at).toLocaleString('pt-BR')} · Status: ${esc(ORDER_STATUS[o.status] || o.status)} · Pagamento: ${esc(o.payment_method || '—')}</p>
+            <p><b>Cliente:</b> ${esc(c.name || '—')} · <b>CPF/CNPJ:</b> ${esc(c.cpf_cnpj || '—')}<br><b>Tel.:</b> ${esc(c.phone || '—')} · <b>E-mail:</b> ${esc(c.email || '—')}</p>
+            <table>${items}<tr><td></td><td>Frete (${esc(o.shipping_service || '—')})</td><td style="text-align:right">${brl(o.freight_amount)}</td></tr>
+            ${Number(o.discount_amount) > 0 ? `<tr><td></td><td>Desconto</td><td style="text-align:right">- ${brl(o.discount_amount)}</td></tr>` : ''}
+            <tr><td></td><td><b>Total</b></td><td style="text-align:right"><b>${brl(o.total_amount)}</b></td></tr></table>
+            <div class="box"><b>DESTINATÁRIO</b><br>${esc(c.name || '')}<br>${esc(o.shipping_address || '')}<br>${esc(c.phone || '')}<br><br><span class="small">Remetente: CDC Comércio Online · Pedido #${Number(o.id)}${o.tracking_code ? ' · Rastreio ' + esc(o.tracking_code) : ''}</span></div>
+            <script>window.onload=function(){window.print()}<\/script></body></html>`);
+            w.document.close();
         }
 
         function formatDateBR(dateStr) {
