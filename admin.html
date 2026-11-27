@@ -542,6 +542,13 @@
                                 <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 px-5 rounded-xl transition shadow"><i class="fas fa-save mr-1"></i> Salvar Configurações</button>
                             </form>
                         </div>
+
+                        <div class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm space-y-3">
+                            <h3 class="text-sm font-black text-navy-900 border-b pb-2 flex items-center gap-2"><i class="fas fa-stethoscope text-blue-600"></i> Testar conexão com os Correios</h3>
+                            <p class="text-[11px] text-gray-600">Verifica se o login da API funciona, qual contrato/cartão está vinculado e se o preço do PAC e do SEDEX responde. Não mostra senhas.</p>
+                            <button type="button" onclick="testarCorreios()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 px-5 rounded-xl transition shadow"><i class="fas fa-plug mr-1"></i> Testar agora</button>
+                            <div id="correiosTestResult" class="text-xs space-y-1.5"></div>
+                        </div>
                     </div>
 
                 </div>
@@ -1147,6 +1154,37 @@
             document.getElementById('cfgSedexCode').value = data.sedex_code || '';
             document.getElementById('cfgHandlingDays').value = data.handling_days ?? 1;
             document.getElementById('cfgFreeMin').value = data.free_shipping_min ?? '';
+        }
+
+        async function testarCorreios() {
+            const box = document.getElementById('correiosTestResult');
+            box.innerHTML = '<p class="text-gray-500"><i class="fas fa-spinner fa-spin"></i> Testando...</p>';
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) { box.innerHTML = '<p class="text-red-600">Faça login novamente.</p>'; return; }
+                const r = await fetch(`${supabaseUrl}/functions/v1/correios-check`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', apikey: supabaseKey, Authorization: `Bearer ${session.access_token}` },
+                    body: '{}'
+                });
+                const d = await r.json();
+                if (!d.success) { box.innerHTML = `<p class="text-red-600">${esc(d.error || 'Falha no teste.')}</p>`; return; }
+                const ok = (b) => b ? '<span class="text-emerald-700 font-bold">OK</span>' : '<span class="text-red-600 font-bold">FALHOU</span>';
+                let h = '<div class="p-2.5 bg-gray-50 border rounded-lg"><b>Segredos cadastrados:</b> ' + Object.entries(d.secrets).map(([k, v]) => `${esc(k)}: ${v ? '✅' : '❌'}`).join(' · ') + '</div>';
+                if (d.message) h += `<div class="p-2.5 bg-amber-50 border border-amber-200 rounded-lg">${esc(d.message)}</div>`;
+                (d.token || []).forEach(t => {
+                    h += `<div class="p-2.5 bg-gray-50 border rounded-lg"><b>Login (${esc(t.method)}):</b> ${ok(t.ok)} ${t.status ? '(' + esc(t.status) + ')' : ''}`
+                      + (t.ok ? `<br>Ambiente: ${esc(t.ambiente || '—')} · CNPJ: ${esc(t.cnpj || '—')}`
+                        + (t.cartaoPostagem ? `<br>Cartão de postagem: ${esc(t.cartaoPostagem.numero)} · Contrato: ${esc(t.cartaoPostagem.contrato)} · DR: ${esc(t.cartaoPostagem.dr)}` : '<br>Sem cartão de postagem vinculado.')
+                        + (t.apis ? `<br>APIs liberadas: ${esc(t.apis.length)}` : '')
+                        : `<br><span class="text-red-600">${esc(t.detalhe || '')}</span>`) + '</div>';
+                });
+                (d.preco || []).forEach(p => {
+                    h += `<div class="p-2.5 bg-gray-50 border rounded-lg"><b>Preço ${esc(p.servico || '')} ${p.codigo ? '(' + esc(p.codigo) + ')' : ''}:</b> ${ok(p.ok)} ${p.status ? '(' + esc(p.status) + ')' : ''}`
+                      + (p.ok ? ` · exemplo p/ 500 g até CEP 01001-000: R$ ${esc(p.preco)}` : `<br><span class="text-red-600">${esc(p.detalhe || '')}</span>`) + '</div>';
+                });
+                box.innerHTML = h;
+            } catch (e) { console.error(e); box.innerHTML = '<p class="text-red-600">Erro de conexão ao testar.</p>'; }
         }
 
         async function salvarConfigAdmin(e) {
